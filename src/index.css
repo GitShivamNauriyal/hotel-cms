@@ -16,6 +16,7 @@
 
     /* Text Colors */
     --color-text-main: light-dark(#0f172a, #f1f5f9);
+    --color-text-secondary: light-dark(#444444, #dddddd);
     --color-text-muted: light-dark(#64748b, #94a3b8);
 
     /* Primary Branding (Hotel Identity) */
@@ -33,15 +34,35 @@
 
 /* 3. Base Styles */
 @layer base {
-    :root {
-        color-scheme: light dark; /* Tells browser to allow both */
-    }
+    .dark {
+        --color-app-bg: #0f172a;
+        --color-sidebar-bg: #1e293b;
+        --color-card-bg: #1e293b;
+        --color-border-subtle: #334155;
+        --color-text-main: #d3d3d3;
+        --color-text-secondary: #bebebe;
+        --color-text-muted: #94a3b8;
 
-    body {
-        background-color: var(--color-app-bg);
-        color: var(--color-text-main);
-        @apply transition-colors duration-200;
+        /* Slightly deeper versions for dark mode */
+        --color-status-available: #16a34a;
+        --color-status-occupied: #dc2626;
     }
+    html,
+    body,
+    #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevents the whole page from scrolling */
+    }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 /* 4. Utility Components (Optional but helpful for prototypes) */

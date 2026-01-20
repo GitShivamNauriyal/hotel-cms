@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react"
-import { Sun, Moon } from "lucide-react"
+import { createContext, useContext, useEffect, useState } from "react"
 
-export default function ThemeToggle() {
-    const [isDark, setIsDark] = useState(
-        localStorage.getItem("hotel-theme") === "dark"
-    )
+const ThemeContext = createContext()
+
+export function ThemeProvider({ children }) {
+    const [isDark, setIsDark] = useState(() => {
+        // Check localStorage or system preference
+        const stored = localStorage.getItem("hotel-theme")
+        if (stored) return stored === "dark"
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+    })
 
     useEffect(() => {
         const root = window.document.documentElement
@@ -17,12 +21,13 @@ export default function ThemeToggle() {
         }
     }, [isDark])
 
+    const toggleTheme = () => setIsDark((prev) => !prev)
+
     return (
-        <button
-            onClick={() => setIsDark(!isDark)}
-            className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:ring-2 ring-brand transition-all"
-        >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+        <ThemeContext.Provider value={{ isDark, toggleTheme }}>
+            {children}
+        </ThemeContext.Provider>
     )
 }
+
+export const useTheme = () => useContext(ThemeContext)
