@@ -125,11 +125,15 @@ router.delete('/:id', requireRoot, async (req, res) => {
 
 // Update status (e.g. CHECKED_IN, CHECKED_OUT, CANCELLED)
 router.put('/:id/status', async (req, res) => {
-    const { status } = req.body;
+    const { status, room_id } = req.body;
     try {
         await req.db.query('BEGIN');
 
-        // Note: checking if room_id is set is required for CHECKED_IN status if we enforced strict logic
+        // If room_id is passed, update it on the reservation
+        if (room_id) {
+            await req.db.query(`UPDATE reservations SET room_id = $1 WHERE id = $2`, [room_id, req.params.id]);
+        }
+
         const { rows } = await req.db.query(
             `UPDATE reservations SET status = $1 WHERE id = $2 RETURNING *`,
             [status, req.params.id]
@@ -140,8 +144,19 @@ router.put('/:id/status', async (req, res) => {
             return res.status(404).json({ error: 'Reservation not found' });
         }
 
-        // Auto-change room housekeeping status on checkout
-        if (status === 'CHECKED_OUT' && rows[0].room_id) {
+        // Enforce physical room assignment for CHECKED_IN
+        if (status === 'CHECKED_IN' && !rows[0].room_id) {
+            await req.db.query('ROLLBACK');
+            return res.status(400).json({ error: 'Cannot check-in without a physical room assigned.' });
+        }
+
+        // Auto-change room housekeeping status
+        if (status === 'CHECKED_IN' && rows[0].room_id) {
+            await req.db.query(
+                `UPDATE rooms SET housekeeping_status = 'OCCUPIED' WHERE id = $1`,
+                [rows[0].room_id]
+            );
+        } else if (status === 'CHECKED_OUT' && rows[0].room_id) {
             await req.db.query(
                 `UPDATE rooms SET housekeeping_status = 'DIRTY' WHERE id = $1`,
                 [rows[0].room_id]

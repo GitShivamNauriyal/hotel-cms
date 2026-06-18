@@ -1,4 +1,4 @@
-# Multi-Tenant Hotel Management System (PMS)
+# Multi-Tenant Hotel Management System (CMS)
 
 A zero-trust, multi-tenant Hotel Property Management System built with a React frontend, Node.js stateless backend, PostgreSQL (with Row-Level Security), and Redis.
 

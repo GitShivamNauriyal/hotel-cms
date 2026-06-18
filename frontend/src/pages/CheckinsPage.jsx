@@ -1,6 +1,6 @@
 import CheckinDashboard from "../modules/checkins/components/CheckinDashboard"
 
-export default function CheckinsPage({ userRole, reservations, setReservations }) {
+export default function CheckinsPage({ userRole, reservations, rooms, triggerSync }) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -8,7 +8,7 @@ export default function CheckinsPage({ userRole, reservations, setReservations }
                     All Checkins
                 </h1>
             </div>
-            <CheckinDashboard reservations={reservations} setReservations={setReservations} />
+            <CheckinDashboard reservations={reservations} rooms={rooms} triggerSync={triggerSync} />
         </div>
     )
 }

@@ -28,12 +28,33 @@ export default function ReservationList({ data, onRowClick }) {
                                 {new Date(res.check_in_date || res.checkin).toLocaleDateString()}
                             </td>
                             <td className="p-5">
-                                <span
-                                    className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase
-                                    ${res.status === "CHECKED_IN" ? "bg-green-500/10 text-green-500" : "bg-blue-500/10 text-blue-500"}`}
-                                >
-                                    {res.status}
-                                </span>
+                                {(() => {
+                                    const today = new Date();
+                                    today.setHours(0,0,0,0);
+                                    const checkOutDate = new Date(res.check_out_date || res.checkout);
+                                    checkOutDate.setHours(0,0,0,0);
+                                    const isDueOut = res.status === "CHECKED_IN" && checkOutDate <= today;
+
+                                    let badgeClass = "bg-blue-500/10 text-blue-500";
+                                    let displayStatus = res.status;
+
+                                    if (isDueOut) {
+                                        badgeClass = "bg-orange-500/10 text-orange-500";
+                                        displayStatus = "DUE OUT";
+                                    } else if (res.status === "CHECKED_IN") {
+                                        badgeClass = "bg-green-500/10 text-green-500";
+                                    } else if (res.status === "CHECKED_OUT") {
+                                        badgeClass = "bg-gray-500/10 text-gray-500";
+                                    } else if (res.status === "CANCELLED") {
+                                        badgeClass = "bg-red-500/10 text-red-500";
+                                    }
+
+                                    return (
+                                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${badgeClass}`}>
+                                            {displayStatus}
+                                        </span>
+                                    );
+                                })()}
                             </td>
                             <td className="p-5 text-text-muted italic">
                                 {res.source}

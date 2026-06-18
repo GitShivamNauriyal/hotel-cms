@@ -110,11 +110,11 @@ export default function App() {
 
         switch (activeTab) {
             case "rooms":
-                return <RoomGrid userRole={userRole} rooms={rooms} roomTypes={roomTypes} triggerSync={triggerSync} />
+                return <RoomGrid userRole={userRole} rooms={rooms} roomTypes={roomTypes} reservations={reservations} triggerSync={triggerSync} />
             case "stay":
                 return <StayViewPage userRole={userRole} rooms={rooms} reservations={reservations} triggerSync={triggerSync} />
             case "checkins":
-                return <CheckinsPage userRole={userRole} reservations={reservations} triggerSync={triggerSync} />
+                return <CheckinsPage userRole={userRole} reservations={reservations} rooms={rooms} triggerSync={triggerSync} />
             case "reservations":
                 return (
                     <ReservationsPage

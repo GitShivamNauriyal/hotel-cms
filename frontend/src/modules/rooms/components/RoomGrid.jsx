@@ -12,34 +12,57 @@ const FILTERS = [
 ]
 
 const statusMap = {
-    "CLEAN": "available",
+    "AVAILABLE": "available",
     "OCCUPIED": "occupied",
     "DIRTY": "dirty",
-    "INSPECTION": "due-out",
+    "DUE_OUT": "due-out",
     "MAINTENANCE": "maintenance"
 }
 
 const reverseStatusMap = {
-    "available": "CLEAN",
+    "available": "AVAILABLE",
     "occupied": "OCCUPIED",
     "dirty": "DIRTY",
-    "due-out": "INSPECTION",
+    "due-out": "DUE_OUT",
     "maintenance": "MAINTENANCE"
 }
 
-export default function RoomGrid({ userRole, rooms = [], roomTypes = [], triggerSync }) {
+export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reservations = [], triggerSync }) {
     const [filter, setFilter] = useState("All")
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [isCreateTypeModalOpen, setIsCreateTypeModalOpen] = useState(false)
     const [newRoom, setNewRoom] = useState({ room_number: "", room_type_id: "" })
     const [newRoomType, setNewRoomType] = useState({ name: "", base_price_per_night: "", max_occupancy: "" })
 
-    const mappedRooms = rooms.map(r => ({
-        ...r,
-        displayId: r.room_number,
-        type: r.room_type_name,
-        status: statusMap[r.housekeeping_status] || "available"
-    }))
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const mappedRooms = rooms.map(r => {
+        let statusStr = statusMap[r.housekeeping_status] || "available";
+
+        // Find active reservation for this room
+        const activeRes = reservations.find(res => res.room_id === r.id && res.status === 'CHECKED_IN');
+        let displayGuest = null;
+
+        if (activeRes) {
+            displayGuest = activeRes.guest_name || activeRes.guest;
+            const checkOutDate = new Date(activeRes.check_out_date);
+            checkOutDate.setHours(0,0,0,0);
+            
+            // If checking out today or earlier, mark as due-out
+            if (checkOutDate <= today) {
+                statusStr = "due-out";
+            }
+        }
+
+        return {
+            ...r,
+            displayId: r.room_number,
+            type: r.room_type_name,
+            status: statusStr,
+            guest: displayGuest
+        };
+    })
 
     const filteredRooms = mappedRooms.filter(room => {
         if (filter === "All") return true;

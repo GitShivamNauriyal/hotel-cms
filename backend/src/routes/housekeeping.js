@@ -6,11 +6,11 @@ const router = express.Router();
 router.use(requireAuth);
 
 const VALID_TRANSITIONS = {
-    'CLEAN': ['OCCUPIED', 'DIRTY'],
-    'OCCUPIED': ['DIRTY', 'CLEAN'], // Allow immediate turnover if configured
-    'DIRTY': ['INSPECTION'],
-    'INSPECTION': ['CLEAN', 'DIRTY'], // Pass or Fail inspection
-    'MAINTENANCE': ['CLEAN']
+    'AVAILABLE': ['OCCUPIED', 'DIRTY', 'MAINTENANCE'],
+    'OCCUPIED': ['DIRTY', 'DUE_OUT'],
+    'DUE_OUT': ['DIRTY'],
+    'DIRTY': ['AVAILABLE', 'MAINTENANCE'],
+    'MAINTENANCE': ['AVAILABLE', 'DIRTY']
 };
 
 /**
