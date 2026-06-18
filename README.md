@@ -41,19 +41,6 @@ npm run dev
 
 ---
 
-## Default Login Credentials
-
-Once the frontend is running, you can log in using the mock credentials seeded in the database.
-
-**Password (for all accounts):** `password123`
-
-- **Super Admin** (Cross-tenant view): `super@hotelcms.com`
-- **Hotel 1 Root/Manager** (Tenant 1 Admin): `root@hotel1.com`
-- **Hotel 2 Root/Manager** (Tenant 2 Admin): `root@hotel2.com`
-- **Hotel 1 Staff** (Tenant 1 Ops): `staff@hotel1.com`
-
----
-
 ## Architecture Overview
 - **Zero-Trust Multi-Tenancy:** All queries are strictly scoped using PostgreSQL Row-Level Security policies tied to the current HTTP request context.
 - **Stateless Auth:** JSON Web Tokens (JWT) are used for authentication. Sessions are strictly client-side (`sessionStorage`).
