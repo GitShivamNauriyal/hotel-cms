@@ -1,73 +1,148 @@
 @import "tailwindcss";
 
-/* 1. Define the Dark Mode strategy (Class-based) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* 2. Define your Design System */
 @theme {
-    /* Surface Colors - Optimized Contrast */
-    --color-app-bg: light-dark(#f8fafc, #0b0f1a);
-    --color-sidebar-bg: light-dark(#ffffff, #111827);
-    --color-card-bg: light-dark(#ffffff, #111827);
-    --color-border-subtle: light-dark(#e2e8f0, #1f2937);
+    /* 2027 Minimalist Design System */
+    --font-sans: "Inter", "Outfit", system-ui, -apple-system, sans-serif;
+    
+    /* Map Tailwind classes to explicit CSS variables */
+    --color-app-bg: var(--app-bg);
+    --color-sidebar-bg: var(--sidebar-bg);
+    --color-card-bg: var(--card-bg);
+    --color-border-subtle: var(--border-subtle);
+    
+    --color-text-main: var(--text-main);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-muted: var(--text-muted);
+    
+    --color-brand: var(--brand);
+    --color-brand-hover: var(--brand-hover);
+    --color-brand-accent: var(--brand-accent);
 
-    /* Text Colors - High Readability */
-    --color-text-main: light-dark(#0f172a, #f9fafb); /* Highest contrast */
-    --color-text-secondary: light-dark(#475569, #d1d5db); /* For body text */
-    --color-text-muted: light-dark(#94a3b8, #6b7280); /* For subtle hints */
-
-    /* Branding - Primary Brand Blue */
-    --color-brand: #3b82f6;
-    --color-brand-hover: #2563eb;
-
-    /* Status Colors - Mapped for Semantic use */
-    --color-status-available: light-dark(#22c55e, #10b981);
-    --color-status-occupied: light-dark(#ef4444, #f43f5e);
-    --color-status-dirty: light-dark(#f59e0b, #fbbf24);
-    --color-status-due-out: light-dark(#0ea5e9, #38bdf8);
-    --color-status-reservation: light-dark(#8b5cf6, #a78bfa);
-    --color-status-maintenance: light-dark(#64748b, #94a3b8);
+    --color-status-available-bg: var(--status-available-bg);
+    --color-status-available-text: var(--status-available-text);
+    
+    --color-status-occupied-bg: var(--status-occupied-bg);
+    --color-status-occupied-text: var(--status-occupied-text);
+    
+    --color-status-dirty-bg: var(--status-dirty-bg);
+    --color-status-dirty-text: var(--status-dirty-text);
+    
+    --color-status-due-out-bg: var(--status-due-out-bg);
+    --color-status-due-out-text: var(--status-due-out-text);
+    
+    --color-status-maintenance-bg: var(--status-maintenance-bg);
+    --color-status-maintenance-text: var(--status-maintenance-text);
 }
 
-/* 3. Base Styles */
 @layer base {
-    .dark {
-        --color-app-bg: #0f172a;
-        --color-sidebar-bg: #1e293b;
-        --color-card-bg: #1e293b;
-        --color-border-subtle: #334155;
-        --color-text-main: #d3d3d3;
-        --color-text-secondary: #bebebe;
-        --color-text-muted: #94a3b8;
+    :root {
+        color-scheme: light;
+        
+        /* Elegant Light Backgrounds */
+        --app-bg: #fcfcfc;
+        --sidebar-bg: #ffffff;
+        --card-bg: #ffffff;
+        --border-subtle: #ebebeb;
+        
+        /* Light Typography */
+        --text-main: #111111;
+        --text-secondary: #666666;
+        --text-muted: #999999;
+        
+        /* Light Brand */
+        --brand: #000000;
+        --brand-hover: #333333;
+        --brand-accent: #3b82f6;
 
-        /* Slightly deeper versions for dark mode */
-        --color-status-available: #16a34a;
-        --color-status-occupied: #dc2626;
+        /* Light Status */
+        --status-available-bg: #ecfdf5;
+        --status-available-text: #059669;
+        
+        --status-occupied-bg: #fef2f2;
+        --status-occupied-text: #dc2626;
+        
+        --status-dirty-bg: #fffbeb;
+        --status-dirty-text: #d97706;
+        
+        --status-due-out-bg: #f0f9ff;
+        --status-due-out-text: #0284c7;
+        
+        --status-maintenance-bg: #f8fafc;
+        --status-maintenance-text: #475569;
     }
-    html,
-    body,
-    html,
-    body,
-    #root {
+
+    .dark {
+        color-scheme: dark;
+        
+        /* Elegant Dark Backgrounds */
+        --app-bg: #050505;
+        --sidebar-bg: #0a0a0a;
+        --card-bg: #111111;
+        --border-subtle: #1f1f1f;
+        
+        /* Dark Typography */
+        --text-main: #ededed;
+        --text-secondary: #a1a1a1;
+        --text-muted: #777777;
+        
+        /* Dark Brand */
+        --brand: #ffffff;
+        --brand-hover: #cccccc;
+        --brand-accent: #3b82f6;
+
+        /* Dark Status */
+        --status-available-bg: #022c22;
+        --status-available-text: #34d399;
+        
+        --status-occupied-bg: #450a0a;
+        --status-occupied-text: #f87171;
+        
+        --status-dirty-bg: #451a03;
+        --status-dirty-text: #fbbf24;
+        
+        --status-due-out-bg: #082f49;
+        --status-due-out-text: #38bdf8;
+        
+        --status-maintenance-bg: #0f172a;
+        --status-maintenance-text: #94a3b8;
+    }
+    
+    html, body, #root {
         height: 100%;
         margin: 0;
         padding: 0;
-        overflow: hidden;
-        @apply transition-colors duration-200;
+        background-color: var(--app-bg);
+        color: var(--text-main);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        @apply transition-colors duration-500;
     }
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-/* 4. Utility Components (Optional but helpful for prototypes) */
-@layer components {
-    .glass-sidebar {
-        @apply bg-sidebar-bg/80 backdrop-blur-md border-r border-border-subtle;
+@layer utilities {
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    /* 2027 Glassmorphism Utils */
+    .glass-panel {
+        @apply bg-card-bg/60 backdrop-blur-2xl border border-border-subtle shadow-[0_8px_32px_-8px_rgba(0,0,0,0.04)];
+    }
+    .dark .glass-panel {
+        @apply shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)];
+    }
+    
+    /* Subtle hover interactions */
+    .hover-lift {
+        @apply transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-[2px] hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.08)];
+    }
+    .dark .hover-lift {
+        @apply hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)];
     }
 }

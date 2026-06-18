@@ -26,17 +26,17 @@ export default function RoomGrid() {
     return (
         <div className="space-y-6">
             {/* Header with Quick Info */}
-            <div className="flex justify-between items-center bg-card-bg p-4 rounded-2xl border border-border-subtle shadow-sm">
-                <div className="flex gap-4">
+            <div className="flex justify-between items-center glass-panel p-3 rounded-2xl">
+                <div className="flex gap-2">
                     {FILTERS.map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all
+                            className={`px-4 py-2 rounded-xl text-[11px] font-bold transition-all tracking-wider
                ${
                    filter === f
-                       ? "bg-brand text-white"
-                       : "bg-app-bg text-text-muted hover:text-brand"
+                       ? "bg-brand text-app-bg shadow-md"
+                       : "bg-transparent text-text-muted hover:text-brand hover:bg-card-bg"
                }`}
                         >
                             {f.toUpperCase()}
@@ -46,7 +46,7 @@ export default function RoomGrid() {
             </div>
 
             {/* Grid of Rooms */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
                 {MOCK_ROOMS.map((room) => (
                     <RoomCard key={room.id} room={room} />
                 ))}

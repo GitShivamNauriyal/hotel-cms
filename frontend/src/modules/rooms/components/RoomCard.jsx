@@ -1,33 +1,38 @@
 import { motion } from "motion/react"
 import { hapticWidgets } from "../../../lib/motion"
-// Fixed imports: Clean -> Sparkles, Hammer -> Wrench
 import { User, Sparkles, Wrench, AlertCircle, Clock } from "lucide-react"
 
 export default function RoomCard({ room }) {
-    const statusColors = {
-        available: "var(--color-status-available)",
-        occupied: "var(--color-status-occupied)",
-        dirty: "var(--color-status-dirty)",
-        "due-out": "var(--color-status-due-out)",
-        maintenance: "var(--color-status-maintenance)",
+    const statusBg = {
+        available: "var(--color-status-available-bg)",
+        occupied: "var(--color-status-occupied-bg)",
+        dirty: "var(--color-status-dirty-bg)",
+        "due-out": "var(--color-status-due-out-bg)",
+        maintenance: "var(--color-status-maintenance-bg)",
+    }
+    const statusText = {
+        available: "var(--color-status-available-text)",
+        occupied: "var(--color-status-occupied-text)",
+        dirty: "var(--color-status-dirty-text)",
+        "due-out": "var(--color-status-due-out-text)",
+        maintenance: "var(--color-status-maintenance-text)",
     }
 
-    // Helper function to return the right icon based on status
     const getStatusIcon = (status) => {
         switch (status) {
             case "occupied":
-                return <User size={16} />
+                return <User size={14} />
             case "dirty":
-                return <Sparkles size={16} />
+                return <Sparkles size={14} />
             case "maintenance":
-                return <Wrench size={16} />
+                return <Wrench size={14} />
             case "due-out":
-                return <Clock size={16} />
+                return <Clock size={14} />
             default:
                 return (
                     <div
                         className="w-2 h-2 rounded-full"
-                        style={{ background: statusColors[status] }}
+                        style={{ background: statusText[status] }}
                     />
                 )
         }
@@ -37,45 +42,47 @@ export default function RoomCard({ room }) {
         <motion.div
             whileHover={hapticWidgets.hover}
             whileTap={hapticWidgets.tap}
-            className="bg-card-bg rounded-2xl border border-border-subtle p-5 shadow-sm cursor-pointer relative overflow-hidden group"
+            className="bg-card-bg rounded-3xl border border-border-subtle p-5 shadow-sm cursor-pointer relative overflow-hidden group hover-lift"
         >
-            <div
-                className="absolute top-0 left-0 w-full h-1.5"
-                style={{ backgroundColor: statusColors[room.status] }}
-            />
-
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-6">
                 <div>
-                    <h3 className="text-2xl text-text-secondary font-black tracking-tighter">
+                    <h3 className="text-3xl text-text-main font-bold tracking-[-0.05em]">
                         {room.id}
                     </h3>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                    <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em] mt-1">
                         {room.type}
                     </p>
                 </div>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-app-bg text-text-muted group-hover:bg-brand group-hover:text-white transition-colors">
-                    {/* Now using the icons correctly */}
+                <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                    style={{
+                        backgroundColor: statusBg[room.status],
+                        color: statusText[room.status],
+                    }}
+                >
                     {getStatusIcon(room.status)}
                 </div>
             </div>
 
-            <div className="mt-8">
-                <span
-                    className="px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-tighter"
-                    style={{
-                        backgroundColor: `${statusColors[room.status]}20`,
-                        color: statusColors[room.status],
-                    }}
-                >
-                    {room.status}
-                </span>
-                <p className="text-xs mt-2 font-medium truncate h-4">
-                    {room.guest || (
-                        <span className="text-text-muted/30 italic">
-                            No Guest
-                        </span>
-                    )}
-                </p>
+            <div className="mt-8 flex items-end justify-between">
+                <div>
+                    <span
+                        className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                        style={{
+                            backgroundColor: statusBg[room.status],
+                            color: statusText[room.status],
+                        }}
+                    >
+                        {room.status.replace("-", " ")}
+                    </span>
+                    <p className="text-[13px] mt-4 font-medium truncate max-w-[120px] text-text-secondary">
+                        {room.guest || (
+                            <span className="text-text-muted/40 italic">
+                                Vacant
+                            </span>
+                        )}
+                    </p>
+                </div>
             </div>
         </motion.div>
     )
