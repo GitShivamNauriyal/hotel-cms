@@ -6,7 +6,16 @@ import { calculateBarPosition } from "../modules/stay-view/utils/timelineHelpers
 
 export default function StayViewPage({ rooms = [], reservations = [] }) {
     const [filter, setFilter] = useState("All Rooms")
-    const timelineStart = new Date()
+    
+    // Timeline State
+    const [timelineStartDate, setTimelineStartDate] = useState(() => {
+        const d = new Date();
+        d.setHours(0,0,0,0);
+        return d;
+    });
+    const [viewDuration, setViewDuration] = useState(14); // 14 days default
+
+    const uniqueRoomTypes = Array.from(new Set(rooms.map(r => r.room_type_name))).filter(Boolean);
 
     const mappedRooms = rooms.map(r => ({
         ...r,
@@ -21,7 +30,7 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
         roomId: res.room_id,
         checkIn: res.check_in_date,
         checkOut: res.check_out_date,
-        guest: res.guest_name,
+        guest: res.guest_name || res.guest,
         status: res.status
     }));
 
@@ -37,15 +46,27 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
                 </h1>
             </div>
 
-            <TimelineControls activeFilter={filter} setFilter={setFilter} />
+            <TimelineControls 
+                activeFilter={filter} 
+                setFilter={setFilter} 
+                roomTypes={uniqueRoomTypes}
+                timelineStartDate={timelineStartDate}
+                setTimelineStartDate={setTimelineStartDate}
+                viewDuration={viewDuration}
+                setViewDuration={setViewDuration}
+            />
 
             <div className="flex-1 relative min-h-0">
-                <TimelineGrid resources={filteredResources}>
+                <TimelineGrid 
+                    resources={filteredResources}
+                    startDate={timelineStartDate}
+                    daysCount={viewDuration}
+                >
                     {mappedReservations.map((res) => {
                         const pos = calculateBarPosition(
                             res.checkIn,
                             res.checkOut,
-                            timelineStart,
+                            timelineStartDate,
                         )
 
                         // Calculate rowIndex dynamically from filteredResources

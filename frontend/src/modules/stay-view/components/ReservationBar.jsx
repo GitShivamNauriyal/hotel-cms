@@ -4,14 +4,16 @@ import { hapticWidgets } from "../../../lib/motion"
 export default function ReservationBar({ reservation, position }) {
     const getStatusTheme = (status) => {
         switch (status) {
-            case "Checked-in":
-                return { bg: "var(--color-status-occupied-bg)", text: "var(--color-status-occupied-text)" }
-            case "Confirmed":
-                return { bg: "var(--color-status-available-bg)", text: "var(--color-status-available-text)" }
-            case "Due Out":
-                return { bg: "var(--color-status-due-out-bg)", text: "var(--color-status-due-out-text)" }
+            case "CHECKED_IN":
+                return { bg: "bg-green-500/20 border-green-500/40", text: "text-green-700 dark:text-green-300" }
+            case "UPCOMING":
+                return { bg: "bg-brand/20 border-brand/40", text: "text-brand" }
+            case "CHECKED_OUT":
+                return { bg: "bg-gray-500/20 border-gray-500/40", text: "text-gray-700 dark:text-gray-300" }
+            case "CANCELLED":
+                return { bg: "bg-red-500/20 border-red-500/40", text: "text-red-700 dark:text-red-300" }
             default:
-                return { bg: "var(--color-status-maintenance-bg)", text: "var(--color-status-maintenance-text)" }
+                return { bg: "bg-yellow-500/20 border-yellow-500/40", text: "text-yellow-700 dark:text-yellow-300" }
         }
     }
 
@@ -25,10 +27,9 @@ export default function ReservationBar({ reservation, position }) {
                 left: `${position.left + 128}px`, // +128px to account for the Room ID column
                 width: `${position.width}px`,
                 top: `${position.top}px`,
-                backgroundColor: theme.bg,
-                color: theme.text,
             }}
-            className="absolute h-[44px] mt-[10px] rounded-2xl shadow-sm z-10 cursor-pointer p-3 flex items-center border border-border-subtle/30 overflow-hidden hover-lift"
+            title={`${reservation.guestName || reservation.guest} (${reservation.status}) - In: ${new Date(reservation.checkIn).toLocaleDateString()} Out: ${new Date(reservation.checkOut).toLocaleDateString()}`}
+            className={`absolute h-[44px] mt-[10px] rounded-2xl shadow-sm z-10 cursor-pointer p-3 flex items-center border overflow-hidden hover-lift ${theme.bg} ${theme.text}`}
         >
             <div className="flex flex-col leading-tight">
                 <span className="text-[11px] font-bold truncate uppercase tracking-widest">

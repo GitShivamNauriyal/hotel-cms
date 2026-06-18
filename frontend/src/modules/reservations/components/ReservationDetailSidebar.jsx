@@ -12,9 +12,9 @@ export default function ReservationDetailSidebar({
     if (!reservation) return null
 
     const handleDelete = async () => {
-        if (!window.confirm("Are you sure you want to delete this reservation? This action cannot be undone.")) return;
+        if (!window.confirm("Are you sure you want to cancel this reservation? It will be moved to the Cancelled tab.")) return;
         try {
-            await api.deleteReservation(reservation.id);
+            await api.updateReservationStatus(reservation.id, "CANCELLED");
             if (triggerSync) triggerSync();
             onClose();
         } catch (error) {
