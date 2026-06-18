@@ -36,6 +36,12 @@ export default function App() {
     })
 
     useEffect(() => {
+        if (userRole === 'super_admin') {
+            sessionStorage.clear()
+            window.location.reload()
+            return
+        }
+
         sessionStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated))
         if (userRole) sessionStorage.setItem('userRole', userRole)
         else sessionStorage.removeItem('userRole')
