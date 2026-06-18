@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* 1. Define the Dark Mode strategy (Class-based) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 2. Define your Design System */
+@theme {
+    /* Surface Colors - Optimized Contrast */
+    --color-app-bg: light-dark(#f8fafc, #0b0f1a);
+    --color-sidebar-bg: light-dark(#ffffff, #111827);
+    --color-card-bg: light-dark(#ffffff, #111827);
+    --color-border-subtle: light-dark(#e2e8f0, #1f2937);
+
+    /* Text Colors - High Readability */
+    --color-text-main: light-dark(#0f172a, #f9fafb); /* Highest contrast */
+    --color-text-secondary: light-dark(#475569, #d1d5db); /* For body text */
+    --color-text-muted: light-dark(#94a3b8, #6b7280); /* For subtle hints */
+
+    /* Branding - Primary Brand Blue */
+    --color-brand: #3b82f6;
+    --color-brand-hover: #2563eb;
+
+    /* Status Colors - Mapped for Semantic use */
+    --color-status-available: light-dark(#22c55e, #10b981);
+    --color-status-occupied: light-dark(#ef4444, #f43f5e);
+    --color-status-dirty: light-dark(#f59e0b, #fbbf24);
+    --color-status-due-out: light-dark(#0ea5e9, #38bdf8);
+    --color-status-reservation: light-dark(#8b5cf6, #a78bfa);
+    --color-status-maintenance: light-dark(#64748b, #94a3b8);
+}
+
+/* 3. Base Styles */
+@layer base {
+    .dark {
+        --color-app-bg: #0f172a;
+        --color-sidebar-bg: #1e293b;
+        --color-card-bg: #1e293b;
+        --color-border-subtle: #334155;
+        --color-text-main: #d3d3d3;
+        --color-text-secondary: #bebebe;
+        --color-text-muted: #94a3b8;
+
+        /* Slightly deeper versions for dark mode */
+        --color-status-available: #16a34a;
+        --color-status-occupied: #dc2626;
+    }
+    html,
+    body,
+    html,
+    body,
+    #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        @apply transition-colors duration-200;
+    }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 4. Utility Components (Optional but helpful for prototypes) */
+@layer components {
+    .glass-sidebar {
+        @apply bg-sidebar-bg/80 backdrop-blur-md border-r border-border-subtle;
+    }
+}
