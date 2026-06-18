@@ -80,7 +80,7 @@ export default function App() {
             case "rooms":
                 return <RoomGrid userRole={userRole} rooms={rooms} setRooms={setRooms} />
             case "stay":
-                return <StayViewPage userRole={userRole} />
+                return <StayViewPage userRole={userRole} rooms={rooms} reservations={reservations} />
             case "checkins":
                 return <CheckinsPage userRole={userRole} reservations={reservations} setReservations={setReservations} />
             case "reservations":

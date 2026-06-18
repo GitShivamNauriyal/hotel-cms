@@ -3,18 +3,14 @@ import TimelineGrid from "../modules/stay-view/components/TimelineGrid"
 import TimelineControls from "../modules/stay-view/components/TimelineControls"
 import ReservationBar from "../modules/stay-view/components/ReservationBar"
 import { calculateBarPosition } from "../modules/stay-view/utils/timelineHelpers"
-import {
-    MOCK_RESOURCES,
-    MOCK_RESERVATIONS,
-} from "../modules/stay-view/constants/mockData"
 
-export default function StayViewPage() {
+export default function StayViewPage({ rooms = [], reservations = [] }) {
     const [filter, setFilter] = useState("All Rooms")
     const timelineStart = new Date()
 
     const filteredResources = filter === "All Rooms" 
-        ? MOCK_RESOURCES 
-        : MOCK_RESOURCES.filter(r => r.type === filter);
+        ? rooms 
+        : rooms.filter(r => r.type === filter);
 
     return (
         <div className="h-full flex flex-col space-y-4">
@@ -28,7 +24,7 @@ export default function StayViewPage() {
 
             <div className="flex-1 relative min-h-0">
                 <TimelineGrid resources={filteredResources}>
-                    {MOCK_RESERVATIONS.map((res) => {
+                    {reservations.map((res) => {
                         const pos = calculateBarPosition(
                             res.checkIn,
                             res.checkOut,
