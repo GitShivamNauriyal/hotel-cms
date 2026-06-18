@@ -2,10 +2,11 @@ import { useState, useEffect } from "react"
 import { Building2, Users, Mail, KeyRound, ShieldAlert } from "lucide-react"
 import { superApi } from "../api/superApi"
 import EditUserModal from "../components/EditUserModal"
-import TopNav from "../../../components/layout/TopNav"
+import { useParams } from "react-router-dom"
+// TopNav removed for Control Plane standalone
 
-export default function SuperUserOrgDetails({ orgId }) {
-    const id = orgId;
+export default function SuperUserOrgDetails({ onLogout }) {
+    const { id } = useParams();
     const [users, setUsers] = useState([])
     const [org, setOrg] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -40,7 +41,10 @@ export default function SuperUserOrgDetails({ orgId }) {
     return (
         <div className="flex h-screen w-full bg-app-bg overflow-hidden text-text-main font-sans">
             <div className="flex flex-col flex-1 min-w-0 h-full">
-                <TopNav currentView={`Tenant Details: ${org?.name}`} />
+                <header className="p-6 border-b border-border-subtle bg-card-bg flex items-center justify-between">
+                    <h2 className="text-xl font-black text-text-main">Tenant Details: {org?.name}</h2>
+                    <button onClick={onLogout} className="text-sm font-bold text-text-muted hover:text-text-main transition-colors">Sign Out</button>
+                </header>
                 <main className="flex-1 overflow-y-auto p-6 bg-app-bg">
                     <div className="space-y-6 max-w-7xl mx-auto">
                         

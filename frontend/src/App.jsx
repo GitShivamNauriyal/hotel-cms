@@ -9,9 +9,6 @@ import LedgerPage from "./pages/LedgerPage"
 import InventoryPage from "./pages/InventoryPage"
 import BIPage from "./pages/BIPage"
 import ChannelManagerPage from "./pages/ChannelManagerPage"
-import SuperUserDashboard from "./modules/super-user/pages/SuperUserDashboard"
-import SuperUserOrgDetails from "./modules/super-user/pages/SuperUserOrgDetails"
-
 import LoginPage from "./pages/LoginPage"
 
 import { MOCK_RESERVATIONS as initialData } from "./modules/stay-view/constants/mockData"
@@ -64,11 +61,10 @@ export default function App() {
             const payload = JSON.parse(atob(data.token.split('.')[1]));
             
             let role = "staff";
-            if (payload.is_super_admin) role = "super_admin";
-            else if (payload.is_root) role = "root";
+            if (payload.is_root) role = "root";
 
             setUserRole(role);
-            setActiveTab(role === "super_admin" ? "super-admin" : "rooms");
+            setActiveTab("rooms");
             setIsAuthenticated(true);
             return true;
         } catch (error) {
@@ -96,16 +92,6 @@ export default function App() {
     if (!isAuthenticated) {
         return <LoginPage onLogin={handleLogin} />
     }
-
-    if (userRole === "super_admin") {
-        const path = window.location.pathname;
-        if (path.startsWith('/super/org/')) {
-            const orgId = path.split('/super/org/')[1];
-            return <SuperUserOrgDetails orgId={orgId} onLogout={handleLogout} />
-        }
-        return <SuperUserDashboard onLogout={handleLogout} />
-    }
-
     const renderContent = () => {
         switch (activeTab) {
             case "rooms":
@@ -132,8 +118,6 @@ export default function App() {
                 return <BIPage userRole={userRole} />
             case "cm":
                 return <ChannelManagerPage userRole={userRole} />
-            case "super-admin":
-                return <SuperUserDashboard />
             default:
                 return (
                     <div className="glass-panel p-10 rounded-3xl min-h-[400px] flex items-center justify-center">

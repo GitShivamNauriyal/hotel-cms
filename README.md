@@ -32,12 +32,31 @@ npm run dev
 The React UI is powered by Vite.
 
 ```bash
-# Open a new terminal
+# Open a third terminal
 cd frontend
 npm install
 npm run dev
 ```
 *The frontend will be accessible at `http://localhost:5173`.*
+
+### 4. Start the Super User Control Plane (Optional)
+The Super User administration layer operates as a completely decoupled microservice.
+
+```bash
+# Open a fourth terminal
+cd super_user/backend
+npm install
+npm run dev
+```
+*The control plane API runs on `http://localhost:4001`.*
+
+```bash
+# Open a fifth terminal
+cd super_user/frontend
+npm install
+npm run dev
+```
+*The control plane dashboard will be accessible at `http://localhost:5174`.*
 
 ---
 

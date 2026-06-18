@@ -4,7 +4,7 @@ import { Globe, Building2, Users, Plus, Power, PowerOff } from "lucide-react"
 import { superApi } from "../api/superApi"
 import CreateHotelModal from "../components/CreateHotelModal"
 
-export default function SuperUserDashboard() {
+export default function SuperUserDashboard({ onLogout }) {
     const [organizations, setOrganizations] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -43,15 +43,24 @@ export default function SuperUserDashboard() {
     }
 
     const openOrgDetails = (orgId) => {
-        window.open(`/super/org/${orgId}`, '_blank')
+        window.open(`/org/${orgId}`, '_blank')
     }
 
-    if (isLoading) return <div className="p-8 text-center text-text-muted font-bold">Loading Global Infrastructure...</div>
+    if (isLoading) return <div className="h-screen flex items-center justify-center bg-app-bg text-text-muted font-bold">Loading Global Infrastructure...</div>
 
     const activeCount = organizations.filter(o => o.billing_status === 'active').length
 
     return (
-        <div className="space-y-6">
+        <div className="flex h-screen w-full bg-app-bg overflow-hidden text-text-main font-sans">
+            <div className="flex flex-col flex-1 min-w-0 h-full">
+                <header className="p-6 border-b border-border-subtle bg-card-bg flex items-center justify-between">
+                    <h2 className="text-xl font-black text-text-main flex items-center gap-2">
+                        <Globe className="text-brand" /> Control Plane
+                    </h2>
+                    <button onClick={onLogout} className="text-sm font-bold text-text-muted hover:text-text-main transition-colors">Sign Out</button>
+                </header>
+                <main className="flex-1 overflow-y-auto p-6 bg-app-bg">
+                    <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-text-main tracking-tight">Global Infrastructure</h1>
@@ -157,6 +166,9 @@ export default function SuperUserDashboard() {
                 onClose={() => setIsCreateModalOpen(false)}
                 onSuccess={fetchOrganizations}
             />
+                    </div>
+                </main>
+            </div>
         </div>
     )
 }

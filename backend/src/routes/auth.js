@@ -42,7 +42,6 @@ router.post('/login', async (req, res) => {
         user_id: user.id,
         organization_id: user.organization_id,
         is_root: user.is_root,
-        is_super_admin: user.is_super_admin,
         jti
       },
       env.JWT_SECRET,

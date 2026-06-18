@@ -27,13 +27,9 @@ async function requireAuth(req, res, next) {
     const client = await pool.connect();
     
     try {
-      if (decoded.is_super_admin) {
-        await client.query("SELECT set_config('app.is_super_admin', 'true', true)");
-      } else {
-        await client.query("SELECT set_config('app.is_super_admin', 'false', true)");
-        if (decoded.organization_id) {
-          await client.query("SELECT set_config('app.current_organization_id', $1, true)", [decoded.organization_id]);
-        }
+      await client.query("SELECT set_config('app.is_super_admin', 'false', true)");
+      if (decoded.organization_id) {
+        await client.query("SELECT set_config('app.current_organization_id', $1, true)", [decoded.organization_id]);
       }
       
       // Attach the contextualized DB client to the request for route handlers to use safely
