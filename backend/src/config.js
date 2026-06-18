@@ -5,6 +5,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL"),
   REDIS_URL: z.string().url("REDIS_URL must be a valid URL"),
   AWS_S3_BUCKET: z.string().min(1, "AWS_S3_BUCKET is required"),
+  JWT_SECRET: z.string().min(16, "JWT_SECRET must be at least 16 characters long"),
   PORT: z.string().default("3000"),
 });
 

@@ -11,9 +11,11 @@ import {
     Package,
     PieChart,
     Share2,
+    ShieldAlert
 } from "lucide-react"
 
 const navItems = [
+    { id: "super-admin", label: "SUPER ADMIN", icon: ShieldAlert },
     { id: "rooms", label: "ROOM VIEW", icon: LayoutGrid },
     { id: "stay", label: "STAY VIEW", icon: CalendarDays },
     { id: "checkins", label: "ALL CHECKINS", icon: UserCheck },

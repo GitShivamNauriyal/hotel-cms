@@ -7,12 +7,21 @@ const { env } = require('./config');
 const { testDbConnection } = require('./db');
 const { testRedisConnection } = require('./redis');
 
+const authRoutes = require('./routes/auth');
+const { releaseDbClient } = require('./middleware/auth');
+
 const app = express();
 
 // Basic middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Global cleanup
+app.use(releaseDbClient);
+
+// Mount routes
+app.use('/api/v1/auth', authRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

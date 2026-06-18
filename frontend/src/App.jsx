@@ -9,6 +9,7 @@ import LedgerPage from "./pages/LedgerPage"
 import InventoryPage from "./pages/InventoryPage"
 import BIPage from "./pages/BIPage"
 import ChannelManagerPage from "./pages/ChannelManagerPage"
+import SuperAdminPage from "./pages/SuperAdminPage"
 
 import { MOCK_RESERVATIONS as initialData } from "./modules/stay-view/constants/mockData"
 
@@ -53,6 +54,8 @@ export default function App() {
                 return <BIPage />
             case "cm":
                 return <ChannelManagerPage />
+            case "super-admin":
+                return <SuperAdminPage />
             default:
                 return (
                     <div className="glass-panel p-10 rounded-3xl min-h-[400px] flex items-center justify-center">
