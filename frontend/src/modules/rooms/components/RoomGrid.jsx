@@ -2,15 +2,6 @@ import { useState } from "react"
 import RoomCard from "./RoomCard"
 import { motion } from "motion/react"
 
-// Mock Data for Prototype
-const MOCK_ROOMS = [
-    { id: "101", type: "Deluxe", status: "available", guest: null },
-    { id: "102", type: "Executive", status: "occupied", guest: "John Doe" },
-    { id: "103", type: "Single", status: "dirty", guest: null },
-    { id: "104", type: "Deluxe", status: "due-out", guest: "Jane Smith" },
-    { id: "105", type: "Family", status: "maintenance", guest: null },
-]
-
 const FILTERS = [
     "All",
     "Available",
@@ -20,13 +11,18 @@ const FILTERS = [
     "Maintenance",
 ]
 
-export default function RoomGrid({ userRole }) {
+export default function RoomGrid({ userRole, rooms = [], setRooms }) {
     const [filter, setFilter] = useState("All")
 
-    const filteredRooms = MOCK_ROOMS.filter(room => {
+    const filteredRooms = rooms.filter(room => {
         if (filter === "All") return true;
         return room.status.toLowerCase() === filter.toLowerCase().replace(" ", "-");
     });
+
+    const handleStatusChange = (id, newStatus) => {
+        if (!setRooms) return;
+        setRooms(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+    }
 
     return (
         <div className="space-y-6">
@@ -59,7 +55,7 @@ export default function RoomGrid({ userRole }) {
             {/* Grid of Rooms */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
                 {filteredRooms.map((room) => (
-                    <RoomCard key={room.id} room={room} />
+                    <RoomCard key={room.id} room={room} onStatusChange={handleStatusChange} />
                 ))}
             </div>
         </div>

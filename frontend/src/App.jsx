@@ -23,6 +23,14 @@ export default function App() {
 
     const [reservations, setReservations] = useState(initialData)
 
+    const [rooms, setRooms] = useState([
+        { id: "101", type: "Deluxe", status: "available", guest: null },
+        { id: "102", type: "Executive", status: "occupied", guest: "John Doe" },
+        { id: "103", type: "Single", status: "dirty", guest: null },
+        { id: "104", type: "Deluxe", status: "due-out", guest: "Jane Smith" },
+        { id: "105", type: "Family", status: "maintenance", guest: null },
+    ])
+
     const handleLogin = (email, password) => {
         // Mock authentication logic
         if (password !== "password123") return false
@@ -70,11 +78,11 @@ export default function App() {
     const renderContent = () => {
         switch (activeTab) {
             case "rooms":
-                return <RoomGrid userRole={userRole} />
+                return <RoomGrid userRole={userRole} rooms={rooms} setRooms={setRooms} />
             case "stay":
                 return <StayViewPage userRole={userRole} />
             case "checkins":
-                return <CheckinsPage userRole={userRole} />
+                return <CheckinsPage userRole={userRole} reservations={reservations} setReservations={setReservations} />
             case "reservations":
                 return (
                     <ReservationsPage

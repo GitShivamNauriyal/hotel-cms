@@ -2,7 +2,7 @@ import { motion } from "motion/react"
 import { hapticWidgets } from "../../../lib/motion"
 import { User, Sparkles, Wrench, AlertCircle, Clock } from "lucide-react"
 
-export default function RoomCard({ room }) {
+export default function RoomCard({ room, onStatusChange }) {
     const statusBg = {
         available: "var(--color-status-available-bg)",
         occupied: "var(--color-status-occupied-bg)",
@@ -66,15 +66,27 @@ export default function RoomCard({ room }) {
 
             <div className="mt-8 flex items-end justify-between">
                 <div>
-                    <span
-                        className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!onStatusChange) return;
+                            const cycle = {
+                                "available": "occupied",
+                                "occupied": "dirty",
+                                "dirty": "maintenance",
+                                "maintenance": "available",
+                                "due-out": "available" // simplified
+                            };
+                            onStatusChange(room.id, cycle[room.status] || "available");
+                        }}
+                        className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:brightness-90 active:scale-95 transition-all"
                         style={{
                             backgroundColor: statusBg[room.status],
                             color: statusText[room.status],
                         }}
                     >
                         {room.status.replace("-", " ")}
-                    </span>
+                    </button>
                     <p className="text-[13px] mt-4 font-medium truncate max-w-[120px] text-text-secondary">
                         {room.guest || (
                             <span className="text-text-muted/40 italic">
