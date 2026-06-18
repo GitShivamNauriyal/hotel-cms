@@ -1,6 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
+const { rateLimit } = require('express-rate-limit');
 
 // Import config first to validate environment before anything else
 const { env } = require('./config');
