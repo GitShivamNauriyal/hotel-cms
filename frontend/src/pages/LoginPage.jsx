@@ -15,13 +15,10 @@ export default function LoginPage({ onLogin }) {
         setError("")
         setIsLoading(true)
 
-        // Mock authentication delay
-        await new Promise(resolve => setTimeout(resolve, 800))
-
-        const success = onLogin(email, password)
+        const success = await onLogin(email, password)
+        setIsLoading(false)
         if (!success) {
             setError("Invalid credentials. Please check your email and password.")
-            setIsLoading(false)
         }
     }
 

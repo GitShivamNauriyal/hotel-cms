@@ -15,7 +15,18 @@ const app = express();
 
 // Basic middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({ origin: '*' })); // Restrict in production
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true, 
+  legacyHeaders: false,
+});
+
+app.use('/api/', apiLimiter);
+
 app.use(express.json());
 
 // Global cleanup
@@ -23,12 +34,14 @@ app.use(releaseDbClient);
 
 const reservationsRoutes = require('./routes/reservations');
 const housekeepingRoutes = require('./routes/housekeeping');
+const financeRoutes = require('./routes/finance');
 
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/config', configRoutes);
 app.use('/api/v1/reservations', reservationsRoutes);
 app.use('/api/v1/housekeeping', housekeepingRoutes);
+app.use('/api/v1/finance', financeRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

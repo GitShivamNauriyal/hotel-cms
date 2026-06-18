@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Layout from "./components/layout/Layout"
 import RoomGrid from "./modules/rooms/components/RoomGrid"
 import ReservationsPage from "./pages/ReservationPage"
@@ -16,45 +16,70 @@ import LoginPage from "./pages/LoginPage"
 import { MOCK_RESERVATIONS as initialData } from "./modules/stay-view/constants/mockData"
 
 export default function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [userRole, setUserRole] = useState(null) // 'super_admin', 'root', 'staff'
-    const [activeTab, setActiveTab] = useState("rooms")
+    const [isAuthenticated, setIsAuthenticated] = useState(() => JSON.parse(sessionStorage.getItem('isAuthenticated') || 'false'))
+    const [userRole, setUserRole] = useState(() => sessionStorage.getItem('userRole') || null) 
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('activeTab') || "rooms")
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-    const [reservations, setReservations] = useState(initialData)
+    const [reservations, setReservations] = useState(() => {
+        const saved = sessionStorage.getItem('reservations');
+        return saved ? JSON.parse(saved) : initialData;
+    })
 
-    const [rooms, setRooms] = useState([
-        { id: "101", type: "Deluxe", status: "available", guest: null },
-        { id: "102", type: "Executive", status: "occupied", guest: "John Doe" },
-        { id: "103", type: "Single", status: "dirty", guest: null },
-        { id: "104", type: "Deluxe", status: "due-out", guest: "Jane Smith" },
-        { id: "105", type: "Family", status: "maintenance", guest: null },
-    ])
+    const [rooms, setRooms] = useState(() => {
+        const saved = sessionStorage.getItem('rooms');
+        return saved ? JSON.parse(saved) : [
+            { id: "101", type: "Deluxe", status: "available", guest: null },
+            { id: "102", type: "Executive", status: "occupied", guest: "John Doe" },
+            { id: "103", type: "Single", status: "dirty", guest: null },
+            { id: "104", type: "Deluxe", status: "due-out", guest: "Jane Smith" },
+            { id: "105", type: "Family", status: "maintenance", guest: null },
+        ];
+    })
 
-    const handleLogin = (email, password) => {
-        // Mock authentication logic
-        if (password !== "password123") return false
+    useEffect(() => {
+        sessionStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated))
+        if (userRole) sessionStorage.setItem('userRole', userRole)
+        else sessionStorage.removeItem('userRole')
+        sessionStorage.setItem('activeTab', activeTab)
+        sessionStorage.setItem('reservations', JSON.stringify(reservations))
+        sessionStorage.setItem('rooms', JSON.stringify(rooms))
+    }, [isAuthenticated, userRole, activeTab, reservations, rooms])
 
-        if (email === "super@hotelcms.com") {
-            setUserRole("super_admin")
-            setActiveTab("super-admin")
-        } else if (email === "root@hotel1.com" || email === "root@hotel2.com") {
-            setUserRole("root")
-            setActiveTab("rooms")
-        } else if (email === "staff@hotel1.com") {
-            setUserRole("staff")
-            setActiveTab("rooms")
-        } else {
-            return false
+    const handleLogin = async (email, password) => {
+        try {
+            const res = await fetch("http://localhost:4000/api/v1/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!res.ok) return false;
+
+            const data = await res.json();
+            sessionStorage.setItem("token", data.token);
+
+            // Parse JWT payload natively
+            const payload = JSON.parse(atob(data.token.split('.')[1]));
+            
+            let role = "staff";
+            if (payload.is_super_admin) role = "super_admin";
+            else if (payload.is_root) role = "root";
+
+            setUserRole(role);
+            setActiveTab(role === "super_admin" ? "super-admin" : "rooms");
+            setIsAuthenticated(true);
+            return true;
+        } catch (error) {
+            console.error("Login failed:", error);
+            return false;
         }
-
-        setIsAuthenticated(true)
-        return true
     }
 
     const handleLogout = () => {
-        setIsAuthenticated(false)
-        setUserRole(null)
+        sessionStorage.clear();
+        setIsAuthenticated(false);
+        setUserRole(null);
     }
 
     const addReservation = (newRes) => {
