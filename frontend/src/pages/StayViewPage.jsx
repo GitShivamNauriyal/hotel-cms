@@ -28,9 +28,9 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
         ...res,
         id: res.id,
         roomId: res.room_id,
-        checkIn: res.check_in_date,
-        checkOut: res.check_out_date,
-        guest: res.guest_name || res.guest,
+        checkIn: res.check_in_date || res.checkin || new Date().toISOString(),
+        checkOut: res.check_out_date || res.checkout || new Date().toISOString(),
+        guest: res.guest_name || res.guest || "Unknown",
         status: res.status
     }));
 
