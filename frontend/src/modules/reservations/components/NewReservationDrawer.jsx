@@ -93,11 +93,11 @@ export default function NewReservationDrawer({
                                 <select 
                                     name="room_type"
                                     required
-                                    className="w-full bg-app-bg border border-border-subtle p-4 rounded-2xl text-text-main focus:border-brand outline-none"
+                                    className="w-full bg-app-bg border border-border-subtle p-4 rounded-2xl text-text-main focus:border-brand outline-none appearance-none"
                                 >
-                                    <option value="">Select Room Type...</option>
+                                    <option value="" className="bg-app-bg text-text-main">Select Room Type...</option>
                                     {roomTypes.map(rt => (
-                                        <option key={rt.id} value={rt.id}>{rt.name}</option>
+                                        <option key={rt.id} value={rt.id} className="bg-app-bg text-text-main">{rt.name}</option>
                                     ))}
                                 </select>
                             </section>

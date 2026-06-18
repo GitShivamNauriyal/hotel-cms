@@ -1,12 +1,31 @@
 import { motion, AnimatePresence } from "motion/react"
-import { X, CreditCard, User, History, Receipt } from "lucide-react"
+import { X, CreditCard, User, History, Receipt, Trash2 } from "lucide-react"
+import { api } from "../../../api"
 
 export default function ReservationDetailSidebar({
     reservation,
     isOpen,
     onClose,
+    userRole,
+    triggerSync
 }) {
     if (!reservation) return null
+
+    const handleDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete this reservation? This action cannot be undone.")) return;
+        try {
+            await api.deleteReservation(reservation.id);
+            if (triggerSync) triggerSync();
+            onClose();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    const nights = Math.max(1, Math.ceil((new Date(reservation.check_out_date) - new Date(reservation.check_in_date)) / (1000 * 60 * 60 * 24)));
+    const roomCharges = nights * (parseFloat(reservation.base_price_per_night) || 0);
+    const ledgerBalance = parseFloat(reservation.ledger_balance) || 0;
+    const totalBalance = roomCharges + ledgerBalance;
 
     return (
         <AnimatePresence>
@@ -30,18 +49,29 @@ export default function ReservationDetailSidebar({
                         <div className="p-6 border-b border-border-subtle flex justify-between items-center">
                             <div>
                                 <span className="text-brand font-black text-xs tracking-widest">
-                                    {reservation.id}
+                                    {reservation.id.split('-')[0].toUpperCase()}
                                 </span>
                                 <h2 className="text-xl font-black text-text-main uppercase italic">
-                                    {reservation.guest}
+                                    {reservation.guest_name || reservation.guest || 'Unknown Guest'}
                                 </h2>
                             </div>
-                            <button
-                                onClick={onClose}
-                                className="p-2 hover:bg-app-bg rounded-xl text-text-muted"
-                            >
-                                <X />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {userRole === 'root' && (
+                                    <button
+                                        onClick={handleDelete}
+                                        className="p-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors"
+                                        title="Delete Reservation"
+                                    >
+                                        <Trash2 size={20} />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 hover:bg-app-bg rounded-xl text-text-muted transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -52,7 +82,15 @@ export default function ReservationDetailSidebar({
                                         Check-in
                                     </p>
                                     <p className="font-bold text-text-main">
-                                        {reservation.checkin}
+                                        {new Date(reservation.check_in_date || reservation.checkin).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
+                                    <p className="text-[10px] font-bold text-text-muted uppercase">
+                                        Check-out
+                                    </p>
+                                    <p className="font-bold text-text-main">
+                                        {new Date(reservation.check_out_date || reservation.checkout).toLocaleDateString()}
                                     </p>
                                 </div>
                                 <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
@@ -61,6 +99,14 @@ export default function ReservationDetailSidebar({
                                     </p>
                                     <span className="text-xs font-black text-brand uppercase">
                                         {reservation.status}
+                                    </span>
+                                </div>
+                                <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
+                                    <p className="text-[10px] font-bold text-text-muted uppercase">
+                                        Room / Type
+                                    </p>
+                                    <span className="text-xs font-black text-text-main uppercase">
+                                        {reservation.room_number ? `Rm ${reservation.room_number}` : (reservation.room_type_name || 'N/A')}
                                     </span>
                                 </div>
                             </div>
@@ -73,18 +119,18 @@ export default function ReservationDetailSidebar({
                                 <div className="bg-card-bg border border-border-subtle rounded-2xl p-5 shadow-inner">
                                     <div className="flex justify-between items-center mb-4">
                                         <span className="text-text-secondary font-medium">
-                                            Room Charges
+                                            Room Charges ({nights} {nights === 1 ? 'Night' : 'Nights'})
                                         </span>
                                         <span className="text-text-main font-bold">
-                                            $450.00
+                                            ${roomCharges.toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center mb-4">
                                         <span className="text-text-secondary font-medium">
-                                            Food & Beverage
+                                            Other Ledger Balance
                                         </span>
                                         <span className="text-text-main font-bold">
-                                            $85.00
+                                            ${ledgerBalance.toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="pt-4 border-t border-border-subtle flex justify-between items-center">
@@ -92,7 +138,7 @@ export default function ReservationDetailSidebar({
                                             Total Balance
                                         </span>
                                         <span className="text-xl font-black text-brand">
-                                            $535.00
+                                            ${totalBalance.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
@@ -103,18 +149,14 @@ export default function ReservationDetailSidebar({
                                 <h3 className="text-xs font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
                                     <User size={14} /> Guest Details
                                 </h3>
-                                <div className="space-y-2 text-sm">
-                                    <p className="text-text-secondary">
-                                        <span className="font-bold text-text-main">
-                                            Email:
-                                        </span>{" "}
-                                        guest@example.com
+                                <div className="space-y-2 text-sm bg-card-bg border border-border-subtle rounded-2xl p-5 shadow-inner">
+                                    <p className="text-text-secondary flex justify-between">
+                                        <span className="font-bold text-text-main">Email:</span>
+                                        <span className="text-text-main">{reservation.guest_email || 'Not provided'}</span>
                                     </p>
-                                    <p className="text-text-secondary">
-                                        <span className="font-bold text-text-main">
-                                            Phone:
-                                        </span>{" "}
-                                        +1 234 567 890
+                                    <p className="text-text-secondary flex justify-between">
+                                        <span className="font-bold text-text-main">Phone:</span>
+                                        <span className="text-text-main">{reservation.guest_phone || 'Not provided'}</span>
                                     </p>
                                 </div>
                             </section>
@@ -122,7 +164,7 @@ export default function ReservationDetailSidebar({
 
                         {/* Actions */}
                         <div className="p-6 border-t border-border-subtle bg-app-bg/50 grid grid-cols-2 gap-4">
-                            <button className="py-4 rounded-2xl border border-border-subtle font-black text-xs uppercase hover:bg-card-bg transition-colors">
+                            <button className="py-4 rounded-2xl border border-border-subtle font-black text-xs uppercase hover:bg-card-bg transition-colors text-text-main">
                                 Print Invoice
                             </button>
                             <button className="py-4 rounded-2xl bg-brand text-white font-black text-xs uppercase hover:brightness-110 transition-all shadow-lg shadow-brand/20">

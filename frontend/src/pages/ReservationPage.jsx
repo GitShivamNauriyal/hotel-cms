@@ -7,7 +7,7 @@ import { Plus } from "lucide-react"
 import { motion } from "motion/react"
 import { hapticWidgets } from "../lib/motion"
 
-export default function ReservationsPage({ reservations, addReservation }) {
+export default function ReservationsPage({ reservations, roomTypes = [], triggerSync, userRole }) {
     const [filteredData, setFilteredData] = useState(reservations)
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const [selectedReservation, setSelectedReservation] = useState(null)
@@ -46,13 +46,16 @@ export default function ReservationsPage({ reservations, addReservation }) {
             <NewReservationDrawer
                 isOpen={isDrawerOpen}
                 onClose={() => setIsDrawerOpen(false)}
-                addReservation={addReservation}
+                roomTypes={roomTypes}
+                triggerSync={triggerSync}
             />
 
             <ReservationDetailSidebar
                 reservation={selectedReservation}
                 isOpen={!!selectedReservation}
                 onClose={() => setSelectedReservation(null)}
+                userRole={userRole}
+                triggerSync={triggerSync}
             />
         </div>
     )

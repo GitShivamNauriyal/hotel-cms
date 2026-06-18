@@ -74,11 +74,26 @@ router.post('/guests', async (req, res) => {
     }
 });
 
+const { requireRoot } = require('../middleware/rbac');
+
 // Basic retrieval
 router.get('/', async (req, res) => {
     try {
         const { rows } = await req.db.query(`
-            SELECT r.*, g.full_name as guest_name, rm.room_number, rt.name as room_type_name
+            SELECT 
+                r.*, 
+                g.full_name as guest_name, 
+                g.email as guest_email, 
+                g.phone as guest_phone,
+                rm.room_number, 
+                rt.name as room_type_name,
+                rt.base_price_per_night,
+                COALESCE((
+                    SELECT SUM(CASE WHEN le.type = 'CHARGE' THEN le.amount WHEN le.type = 'PAYMENT' THEN -le.amount ELSE 0 END)
+                    FROM folios f
+                    LEFT JOIN ledger_entries le ON f.id = le.folio_id
+                    WHERE f.reservation_id = r.id
+                ), 0) as ledger_balance
             FROM reservations r
             JOIN guests g ON r.guest_id = g.id
             LEFT JOIN rooms rm ON r.room_id = rm.id
@@ -88,6 +103,23 @@ router.get('/', async (req, res) => {
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Delete reservation
+router.delete('/:id', requireRoot, async (req, res) => {
+    try {
+        await req.db.query('BEGIN');
+        const { rowCount } = await req.db.query(`DELETE FROM reservations WHERE id = $1`, [req.params.id]);
+        if (rowCount === 0) {
+            await req.db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+        await req.db.query('COMMIT');
+        res.status(204).send();
+    } catch (error) {
+        await req.db.query('ROLLBACK');
+        res.status(400).json({ error: error.message });
     }
 });
 

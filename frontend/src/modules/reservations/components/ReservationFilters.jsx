@@ -9,20 +9,26 @@ export default function ReservationFilters({ data, setFilteredData }) {
     const [activeTab, setActiveTab] = useState("All")
     const [searchQuery, setSearchQuery] = useState("")
 
-    // Handle filtering logic locally with dummy data
+    // Handle filtering logic locally with real API data
     useEffect(() => {
         let result = data
 
         // 1. Filter by Tab Category
         if (activeTab !== "All") {
-            result = result.filter((res) => res.status === activeTab)
+            const apiStatusMap = {
+                "Upcoming": "UPCOMING",
+                "Checked-in": "CHECKED_IN",
+                "History": "CHECKED_OUT",
+                "Cancelled": "CANCELLED"
+            };
+            result = result.filter((res) => res.status === apiStatusMap[activeTab]);
         }
 
         // 2. Filter by Search Query (ID or Guest Name)
         if (searchQuery) {
             const query = searchQuery.toLowerCase()
             result = result.filter((res) => {
-                const guestName = res.guest || "" // Fallback to empty string
+                const guestName = res.guest_name || res.guest || ""
                 const resId = res.id || ""
                 return (
                     guestName.toLowerCase().includes(query) ||
