@@ -17,11 +17,11 @@ export default function SuperUserOrgDetails({ onLogout }) {
         try {
             // Ideally we'd have a GET /org/:id endpoint, but we can just fetch all and filter for now to save backend time
             const orgs = await superApi.getOrganizations()
-            const currentOrg = orgs.find(o => o.id === id)
+            const currentOrg = orgs.find(o => o.subdomain === id)
             if (!currentOrg) throw new Error('Organization not found')
             setOrg(currentOrg)
 
-            const usersData = await superApi.getOrganizationUsers(id)
+            const usersData = await superApi.getOrganizationUsers(currentOrg.id)
             setUsers(usersData)
         } catch (err) {
             setError(err.message)

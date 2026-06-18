@@ -126,7 +126,7 @@ export default function SuperUserDashboard({ onLogout }) {
                                 return (
                                     <tr 
                                         key={org.id} 
-                                        onClick={() => openOrgDetails(org.id)}
+                                        onClick={() => openOrgDetails(org.subdomain)}
                                         className="border-b border-border-subtle/50 hover:bg-card-bg/40 transition-colors cursor-pointer group"
                                     >
                                         <td className="py-4 px-4 font-bold text-text-main">{org.name}</td>
