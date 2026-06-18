@@ -36,6 +36,7 @@ app.use(releaseDbClient);
 const reservationsRoutes = require('./routes/reservations');
 const housekeepingRoutes = require('./routes/housekeeping');
 const financeRoutes = require('./routes/finance');
+const superuserRoutes = require('./routes/superuser');
 
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
@@ -43,6 +44,7 @@ app.use('/api/v1/config', configRoutes);
 app.use('/api/v1/reservations', reservationsRoutes);
 app.use('/api/v1/housekeeping', housekeepingRoutes);
 app.use('/api/v1/finance', financeRoutes);
+app.use('/api/v1/super', superuserRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -9,7 +9,8 @@ import LedgerPage from "./pages/LedgerPage"
 import InventoryPage from "./pages/InventoryPage"
 import BIPage from "./pages/BIPage"
 import ChannelManagerPage from "./pages/ChannelManagerPage"
-import SuperAdminPage from "./pages/SuperAdminPage"
+import SuperUserDashboard from "./modules/super-user/pages/SuperUserDashboard"
+import SuperUserOrgDetails from "./modules/super-user/pages/SuperUserOrgDetails"
 
 import LoginPage from "./pages/LoginPage"
 
@@ -97,7 +98,12 @@ export default function App() {
     }
 
     if (userRole === "super_admin") {
-        return <SuperAdminPage onLogout={handleLogout} />
+        const path = window.location.pathname;
+        if (path.startsWith('/super/org/')) {
+            const orgId = path.split('/super/org/')[1];
+            return <SuperUserOrgDetails orgId={orgId} onLogout={handleLogout} />
+        }
+        return <SuperUserDashboard onLogout={handleLogout} />
     }
 
     const renderContent = () => {
@@ -127,7 +133,7 @@ export default function App() {
             case "cm":
                 return <ChannelManagerPage userRole={userRole} />
             case "super-admin":
-                return <SuperAdminPage />
+                return <SuperUserDashboard />
             default:
                 return (
                     <div className="glass-panel p-10 rounded-3xl min-h-[400px] flex items-center justify-center">

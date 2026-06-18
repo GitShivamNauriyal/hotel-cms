@@ -15,9 +15,18 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const { rows } = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
+    const { rows } = await pool.query(`
+      SELECT u.*, o.billing_status 
+      FROM users u 
+      LEFT JOIN organizations o ON u.organization_id = o.id 
+      WHERE u.email = $1
+    `, [email]);
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (rows[0].billing_status === 'deactivated') {
+      return res.status(403).json({ error: 'Deactivated account' });
     }
 
     const user = rows[0];
