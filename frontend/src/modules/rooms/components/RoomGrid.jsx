@@ -23,6 +23,11 @@ const FILTERS = [
 export default function RoomGrid({ userRole }) {
     const [filter, setFilter] = useState("All")
 
+    const filteredRooms = MOCK_ROOMS.filter(room => {
+        if (filter === "All") return true;
+        return room.status.toLowerCase() === filter.toLowerCase().replace(" ", "-");
+    });
+
     return (
         <div className="space-y-6">
             {/* Header with Quick Info */}
@@ -45,7 +50,7 @@ export default function RoomGrid({ userRole }) {
                 </div>
                 
                 {userRole === "root" && (
-                    <button className="px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-sm">
+                    <button className="px-4 py-2 bg-brand text-app-bg text-xs font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-sm">
                         + Add Room
                     </button>
                 )}
@@ -53,7 +58,7 @@ export default function RoomGrid({ userRole }) {
 
             {/* Grid of Rooms */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-                {MOCK_ROOMS.map((room) => (
+                {filteredRooms.map((room) => (
                     <RoomCard key={room.id} room={room} />
                 ))}
             </div>

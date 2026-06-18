@@ -45,7 +45,7 @@ export default function ReservationFilters({ data, setFilteredData }) {
                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap
                         ${
                             activeTab === cat
-                                ? "bg-brand text-white shadow-md"
+                                ? "bg-brand text-app-bg shadow-md"
                                 : "text-text-muted hover:text-brand"
                         }`}
                     >

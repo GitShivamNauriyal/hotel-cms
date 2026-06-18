@@ -26,7 +26,7 @@ export default function ReservationsPage({ reservations, addReservation }) {
                 <motion.button
                     whileTap={hapticWidgets.tap}
                     onClick={() => setIsDrawerOpen(true)}
-                    className="flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-brand/20 transition-transform hover:scale-105"
+                    className="flex items-center gap-2 bg-brand text-app-bg px-6 py-3 rounded-2xl font-bold shadow-lg shadow-brand/20 transition-transform hover:scale-105"
                 >
                     <Plus size={20} />
                     ADD NEW RESERVATION

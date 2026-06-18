@@ -1,8 +1,7 @@
 import { useMemo } from "react"
 import { generateTimelineDates } from "../utils/dateHelpers"
-import { MOCK_RESOURCES } from "../constants/mockData" // Ensure exact casing here
 
-export default function TimelineGrid({ children }) {
+export default function TimelineGrid({ children, resources }) {
     const dates = useMemo(() => generateTimelineDates(21), [])
 
     return (
@@ -36,7 +35,7 @@ export default function TimelineGrid({ children }) {
                     </div>
 
                     {/* Timeline Body - Room Rows */}
-                    {MOCK_RESOURCES.map((room) => (
+                    {resources.map((room) => (
                         <div
                             key={room.id}
                             className="flex border-b border-border-subtle hover:bg-card-bg transition-colors h-16 group"
