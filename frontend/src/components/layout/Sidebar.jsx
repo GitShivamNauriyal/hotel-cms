@@ -11,11 +11,9 @@ import {
     Package,
     PieChart,
     Share2,
-    ShieldAlert
 } from "lucide-react"
 
 const navItems = [
-    { id: "super-admin", label: "SUPER ADMIN", icon: ShieldAlert },
     { id: "rooms", label: "ROOM VIEW", icon: LayoutGrid },
     { id: "stay", label: "STAY VIEW", icon: CalendarDays },
     { id: "checkins", label: "ALL CHECKINS", icon: UserCheck },
@@ -69,20 +67,18 @@ export default function Sidebar({
                         whileTap={hapticWidgets.tap}
                         onClick={() => setActiveId(item.id)}
                         className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-300 group
-              ${
-                  activeId === item.id
-                      ? "bg-brand text-app-bg shadow-md"
-                      : "hover:bg-card-bg text-text-muted hover:text-brand hover:shadow-sm border border-transparent hover:border-border-subtle"
-              }`}
+              ${activeId === item.id
+                                ? "bg-brand text-app-bg shadow-md"
+                                : "hover:bg-card-bg text-text-muted hover:text-brand hover:shadow-sm border border-transparent hover:border-border-subtle"
+                            }`}
                     >
                         <item.icon size={20} strokeWidth={activeId === item.id ? 2 : 1.5} className="shrink-0" />
                         {isOpen && (
                             <motion.span
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className={`ml-4 font-semibold text-xs tracking-widest whitespace-nowrap ${
-                                    activeId === item.id ? "" : "opacity-80"
-                                }`}
+                                className={`ml-4 font-semibold text-xs tracking-widest whitespace-nowrap ${activeId === item.id ? "" : "opacity-80"
+                                    }`}
                             >
                                 {item.label}
                             </motion.span>

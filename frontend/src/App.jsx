@@ -11,13 +11,43 @@ import BIPage from "./pages/BIPage"
 import ChannelManagerPage from "./pages/ChannelManagerPage"
 import SuperAdminPage from "./pages/SuperAdminPage"
 
+import LoginPage from "./pages/LoginPage"
+
 import { MOCK_RESERVATIONS as initialData } from "./modules/stay-view/constants/mockData"
 
 export default function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const [userRole, setUserRole] = useState(null) // 'super_admin', 'root', 'staff'
     const [activeTab, setActiveTab] = useState("rooms")
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
     const [reservations, setReservations] = useState(initialData)
+
+    const handleLogin = (email, password) => {
+        // Mock authentication logic
+        if (password !== "password123") return false
+
+        if (email === "super@hotelcms.com") {
+            setUserRole("super_admin")
+            setActiveTab("super-admin")
+        } else if (email === "root@hotel1.com" || email === "root@hotel2.com") {
+            setUserRole("root")
+            setActiveTab("rooms")
+        } else if (email === "staff@hotel1.com") {
+            setUserRole("staff")
+            setActiveTab("rooms")
+        } else {
+            return false
+        }
+
+        setIsAuthenticated(true)
+        return true
+    }
+
+    const handleLogout = () => {
+        setIsAuthenticated(false)
+        setUserRole(null)
+    }
 
     const addReservation = (newRes) => {
         setReservations((prev) => [
@@ -27,6 +57,14 @@ export default function App() {
                 id: `RES-${Math.floor(Math.random() * 9000) + 1000}`,
             },
         ])
+    }
+
+    if (!isAuthenticated) {
+        return <LoginPage onLogin={handleLogin} />
+    }
+
+    if (userRole === "super_admin") {
+        return <SuperAdminPage onLogout={handleLogout} />
     }
 
     const renderContent = () => {
@@ -74,6 +112,7 @@ export default function App() {
             setActiveId={setActiveTab}
             isOpen={isSidebarOpen}
             toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            onLogout={handleLogout}
         >
             {renderContent()}
         </Layout>

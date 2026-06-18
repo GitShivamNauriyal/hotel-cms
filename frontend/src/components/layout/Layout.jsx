@@ -1,5 +1,6 @@
 import Sidebar from "./Sidebar"
 import TopNav from "./TopNav"
+import { LogOut } from "lucide-react"
 
 export default function Layout({
     children,
@@ -8,6 +9,7 @@ export default function Layout({
     setActiveId,
     isOpen,
     toggleSidebar,
+    onLogout
 }) {
     return (
         <div className="flex h-screen w-full bg-app-bg overflow-hidden transition-colors duration-300">
@@ -19,7 +21,7 @@ export default function Layout({
             />
 
             <div className="flex flex-col flex-1 min-w-0 h-full">
-                <TopNav currentView={currentView} />
+                <TopNav currentView={currentView} onLogout={onLogout} />
                 <main className="flex-1 overflow-y-auto p-6 bg-app-bg">
                     {children}
                 </main>

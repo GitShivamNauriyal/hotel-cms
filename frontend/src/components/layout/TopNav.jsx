@@ -1,41 +1,54 @@
 import { useTheme } from "../../contexts/ThemeContext"
-import { Sun, Moon, Bell } from "lucide-react"
+import { Sun, Moon, Bell, Search, LogOut } from "lucide-react"
 import { motion } from "motion/react"
 import { hapticWidgets } from "../../lib/motion"
 
-export default function TopNav({ currentView }) {
+export default function TopNav({ currentView, onLogout }) {
     const { isDark, toggleTheme } = useTheme()
 
     return (
-        <header className="h-16 bg-sidebar-bg/80 backdrop-blur-xl border-b border-border-subtle flex items-center justify-between px-8 sticky top-0 z-10 transition-colors duration-300">
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-text-main opacity-80">
-                {currentView.replace("-", " ")}
-            </h2>
-
+        <header className="h-20 border-b border-border-subtle bg-app-bg/80 backdrop-blur-xl flex items-center px-8 justify-between z-10 sticky top-0">
+            <div className="flex items-center gap-4">
+                <h2 className="text-xl font-bold tracking-tight capitalize text-text-main">
+                    {currentView.replace("-", " ")}
+                </h2>
+            </div>
+            
             <div className="flex items-center gap-4">
                 {/* THEME TOGGLE BUTTON */}
                 <motion.button
                     whileTap={hapticWidgets.tap}
                     onClick={toggleTheme}
-                    className="p-2.5 rounded-full bg-card-bg text-text-main border border-border-subtle shadow-sm hover-lift"
-                    title={
-                        isDark ? "Switch to Light Mode" : "Switch to Dark Mode"
-                    }
+                    className="w-10 h-10 rounded-xl bg-card-bg border border-border-subtle flex items-center justify-center text-text-secondary hover:text-brand hover:border-brand/30 transition-all shadow-sm"
+                    title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 >
                     {isDark ? (
-                        <Sun size={16} className="text-yellow-400" />
+                        <Sun size={18} className="text-yellow-400" />
                     ) : (
-                        <Moon size={16} className="text-brand" />
+                        <Moon size={18} className="text-brand" />
                     )}
                 </motion.button>
 
-                <motion.button
-                    whileTap={hapticWidgets.tap}
-                    className="p-2.5 rounded-full bg-card-bg text-text-main border border-border-subtle shadow-sm hover-lift relative"
+                <button className="w-10 h-10 rounded-xl bg-card-bg border border-border-subtle flex items-center justify-center text-text-secondary hover:text-brand hover:border-brand/30 transition-all shadow-sm">
+                    <Search size={18} />
+                </button>
+                
+                <button className="w-10 h-10 rounded-xl bg-card-bg border border-border-subtle flex items-center justify-center text-text-secondary hover:text-brand hover:border-brand/30 transition-all shadow-sm relative">
+                    <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full border border-card-bg"></div>
+                    <Bell size={18} />
+                </button>
+
+                <button 
+                    onClick={onLogout}
+                    className="w-10 h-10 rounded-xl bg-card-bg border border-border-subtle flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-500/30 transition-all shadow-sm"
+                    title="Logout"
                 >
-                    <div className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-brand-accent rounded-full border border-card-bg"></div>
-                    <Bell size={16} />
-                </motion.button>
+                    <LogOut size={18} />
+                </button>
+
+                <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand font-bold shadow-sm">
+                    JS
+                </div>
             </div>
         </header>
     )
