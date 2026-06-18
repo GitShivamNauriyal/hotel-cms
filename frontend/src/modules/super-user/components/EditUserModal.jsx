@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { X, Mail, Lock, AlertCircle, ShieldAlert } from "lucide-react"
-import { superApi } from "../../api/superApi"
+import { superApi } from "../api/superApi"
 
 export default function EditUserModal({ isOpen, onClose, user, onSuccess }) {
     const [formData, setFormData] = useState({

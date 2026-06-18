@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { X, Building2, Globe, Mail, Lock, AlertCircle } from "lucide-react"
-import { superApi } from "../../api/superApi"
+import { superApi } from "../api/superApi"
 
 export default function CreateHotelModal({ isOpen, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
