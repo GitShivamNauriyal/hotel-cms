@@ -116,4 +116,23 @@ router.post('/folios/:folioId/entries', async (req, res) => {
     }
 });
 
+/**
+ * Get Organization Ledger
+ */
+router.get('/ledger', async (req, res) => {
+    try {
+        const { rows } = await req.db.query(
+            `SELECT l.*, f.reservation_id, f.status as folio_status
+             FROM ledger_entries l
+             JOIN folios f ON l.folio_id = f.id
+             WHERE l.organization_id = $1
+             ORDER BY l.created_at DESC`,
+            [req.user.organization_id]
+        );
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = router;

@@ -68,7 +68,7 @@ export default function Sidebar({
                         onClick={() => setActiveId(item.id)}
                         className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-300 group
               ${activeId === item.id
-                                ? "bg-brand text-app-bg shadow-md"
+                                ? "bg-brand text-white shadow-md"
                                 : "hover:bg-card-bg text-text-muted hover:text-brand hover:shadow-sm border border-transparent hover:border-border-subtle"
                             }`}
                     >

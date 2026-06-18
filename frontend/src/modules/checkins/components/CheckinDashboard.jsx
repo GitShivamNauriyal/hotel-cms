@@ -1,29 +1,29 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { UserCheck, Search, ChevronRight, CheckCircle2 } from "lucide-react"
+import { api } from "../../../api"
 
-export default function CheckinDashboard({ reservations = [], setReservations }) {
+export default function CheckinDashboard({ reservations = [], triggerSync }) {
     const [searchTerm, setSearchTerm] = useState("")
 
     // Filter for upcoming arriving guests
     const upcoming = reservations.filter(
-        (res) =>
-            res.status === "CONFIRMED" || res.status === "UPCOMING"
+        (res) => res.status === "UPCOMING"
     )
 
     const filtered = upcoming.filter(
         (res) =>
-            res.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            res.guest_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             res.id.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const handleCheckIn = (id) => {
-        if (!setReservations) return;
-        setReservations((prev) =>
-            prev.map((r) =>
-                r.id === id ? { ...r, status: "IN-HOUSE" } : r
-            )
-        )
+    const handleCheckIn = async (id) => {
+        try {
+            await api.updateReservationStatus(id, "CHECKED_IN");
+            if (triggerSync) triggerSync();
+        } catch (error) {
+            alert(error.message);
+        }
     }
 
     return (
@@ -61,32 +61,32 @@ export default function CheckinDashboard({ reservations = [], setReservations })
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h3 className="text-lg font-black text-text-main">
-                                            {res.guestName}
+                                            {res.guest_name}
                                         </h3>
                                         <p className="text-xs font-bold text-text-muted tracking-widest uppercase">
-                                            {res.id}
+                                            {res.id.split('-')[0]}-{res.id.split('-')[1]}
                                         </p>
                                     </div>
                                     <span className="px-3 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-bold rounded-xl border border-yellow-500/20">
-                                        ARRIBAL
+                                        ARRIVAL
                                     </span>
                                 </div>
                                 <div className="bg-app-bg p-3 rounded-2xl border border-border-subtle flex justify-between items-center">
                                     <div className="space-y-1">
                                         <p className="text-[10px] uppercase font-bold text-text-muted tracking-widest">Room Type</p>
-                                        <p className="text-sm font-semibold text-text-main">{res.roomType}</p>
+                                        <p className="text-sm font-semibold text-text-main">{res.room_type_name}</p>
                                     </div>
                                     <div className="w-px h-8 bg-border-subtle" />
                                     <div className="space-y-1 text-right">
-                                        <p className="text-[10px] uppercase font-bold text-text-muted tracking-widest">Nights</p>
-                                        <p className="text-sm font-semibold text-text-main">3</p>
+                                        <p className="text-[10px] uppercase font-bold text-text-muted tracking-widest">Check In</p>
+                                        <p className="text-sm font-semibold text-text-main">{new Date(res.check_in_date).toLocaleDateString()}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => handleCheckIn(res.id)}
-                                className="mt-6 w-full py-4 bg-brand text-app-bg font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-brand/20 uppercase tracking-widest text-xs"
+                                className="mt-6 w-full py-4 bg-brand text-white font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-brand/20 uppercase tracking-widest text-xs"
                             >
                                 <CheckCircle2 size={16} />
                                 Complete Check-In

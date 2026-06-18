@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
         );
 
         // In Phase 4, we would initialize the financial folio here.
-        // await req.db.query(`INSERT INTO folios (reservation_id, status) VALUES ($1, 'OPEN')`, [newReservation[0].id]);
+        await req.db.query(`INSERT INTO folios (reservation_id, organization_id, status) VALUES ($1, $2, 'OPEN')`, [newReservation[0].id, org_id]);
 
         await req.db.query('COMMIT');
         res.status(201).json(newReservation[0]);
@@ -59,19 +59,68 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Create guest
+router.post('/guests', async (req, res) => {
+    const { full_name, email, phone } = req.body;
+    try {
+        const { rows } = await req.db.query(
+            `INSERT INTO guests (organization_id, full_name, email, phone)
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [req.user.organization_id, full_name, email, phone]
+        );
+        res.status(201).json(rows[0]);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 // Basic retrieval
 router.get('/', async (req, res) => {
     try {
         const { rows } = await req.db.query(`
-            SELECT r.*, g.full_name as guest_name, rm.room_number 
+            SELECT r.*, g.full_name as guest_name, rm.room_number, rt.name as room_type_name
             FROM reservations r
             JOIN guests g ON r.guest_id = g.id
             LEFT JOIN rooms rm ON r.room_id = rm.id
+            LEFT JOIN room_types rt ON r.room_type_id = rt.id
             ORDER BY r.check_in_date ASC
         `);
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Update status (e.g. CHECKED_IN, CHECKED_OUT, CANCELLED)
+router.put('/:id/status', async (req, res) => {
+    const { status } = req.body;
+    try {
+        await req.db.query('BEGIN');
+
+        // Note: checking if room_id is set is required for CHECKED_IN status if we enforced strict logic
+        const { rows } = await req.db.query(
+            `UPDATE reservations SET status = $1 WHERE id = $2 RETURNING *`,
+            [status, req.params.id]
+        );
+
+        if (rows.length === 0) {
+            await req.db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+
+        // Auto-change room housekeeping status on checkout
+        if (status === 'CHECKED_OUT' && rows[0].room_id) {
+            await req.db.query(
+                `UPDATE rooms SET housekeeping_status = 'DIRTY' WHERE id = $1`,
+                [rows[0].room_id]
+            );
+        }
+
+        await req.db.query('COMMIT');
+        res.json(rows[0]);
+    } catch (error) {
+        await req.db.query('ROLLBACK');
+        res.status(400).json({ error: error.message });
     }
 });
 

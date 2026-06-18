@@ -43,7 +43,7 @@ export default function TimelineGrid({ children, resources }) {
                             {/* Sticky Room Label */}
                             <div className="w-32 shrink-0 sticky left-0 z-10 border-r border-border-subtle bg-sidebar-bg/90 backdrop-blur-md p-4 transition-colors group-hover:bg-card-bg">
                                 <span className="font-bold text-sm text-text-main tracking-[-0.02em]">
-                                    {room.id}
+                                    {room.displayId || room.id}
                                 </span>
                                 <p className="text-[9px] font-semibold text-text-muted uppercase tracking-[0.1em] mt-0.5">
                                     {room.type}

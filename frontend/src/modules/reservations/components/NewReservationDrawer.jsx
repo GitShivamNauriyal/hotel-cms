@@ -1,25 +1,39 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X, User, Calendar, CreditCard, MapPin } from "lucide-react"
+import { api } from "../../../api"
 
 export default function NewReservationDrawer({
     isOpen,
     onClose,
-    addReservation,
+    triggerSync,
+    roomTypes = []
 }) {
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         const fd = new FormData(e.target)
 
-        addReservation({
-            guest: fd.get("guest"),
-            checkin: fd.get("checkin"),
-            checkout: fd.get("checkout"),
-            status: "Upcoming",
-            source: fd.get("source") || "Direct",
-            email: fd.get("email"),
-            phone: fd.get("phone"),
-        })
-        onClose()
+        try {
+            // 1. Create Guest
+            const guest = await api.createGuest({
+                full_name: fd.get("guest"),
+                email: fd.get("email"),
+                phone: fd.get("phone")
+            })
+
+            // 2. Create Reservation
+            await api.createReservation({
+                guest_id: guest.id,
+                room_type_id: fd.get("room_type"),
+                check_in_date: fd.get("checkin"),
+                check_out_date: fd.get("checkout"),
+                source: fd.get("source") || "Direct"
+            })
+
+            if (triggerSync) triggerSync()
+            onClose()
+        } catch (error) {
+            alert(error.message)
+        }
     }
 
     return (
@@ -76,6 +90,16 @@ export default function NewReservationDrawer({
                                         className="bg-app-bg border border-border-subtle p-4 rounded-2xl text-text-main focus:border-brand outline-none"
                                     />
                                 </div>
+                                <select 
+                                    name="room_type"
+                                    required
+                                    className="w-full bg-app-bg border border-border-subtle p-4 rounded-2xl text-text-main focus:border-brand outline-none"
+                                >
+                                    <option value="">Select Room Type...</option>
+                                    {roomTypes.map(rt => (
+                                        <option key={rt.id} value={rt.id}>{rt.name}</option>
+                                    ))}
+                                </select>
                             </section>
 
                             <section className="space-y-4">
@@ -110,7 +134,7 @@ export default function NewReservationDrawer({
 
                             <button
                                 type="submit"
-                                className="w-full bg-brand text-app-bg py-5 rounded-2xl font-black shadow-xl shadow-brand/30 hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-widest"
+                                className="w-full bg-brand text-white py-5 rounded-2xl font-black shadow-xl shadow-brand/30 hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-widest"
                             >
                                 Finalize & Create Folio
                             </button>

@@ -3,7 +3,7 @@ import { Sun, Moon, Bell, Search, LogOut } from "lucide-react"
 import { motion } from "motion/react"
 import { hapticWidgets } from "../../lib/motion"
 
-export default function TopNav({ currentView, onLogout }) {
+export default function TopNav({ currentView, onLogout, profile }) {
     const { isDark, toggleTheme } = useTheme()
 
     return (
@@ -46,8 +46,15 @@ export default function TopNav({ currentView, onLogout }) {
                     <LogOut size={18} />
                 </button>
 
-                <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand font-bold shadow-sm">
-                    JS
+                {profile && (
+                    <div className="flex flex-col items-end justify-center ml-2 mr-2">
+                        <span className="text-sm font-bold text-text-main leading-tight">{profile.org_name}</span>
+                        <span className="text-xs font-semibold text-brand tracking-wider uppercase">{profile.is_root ? 'Root Admin' : 'Staff'}</span>
+                    </div>
+                )}
+                
+                <div className="w-10 h-10 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand font-bold shadow-sm uppercase">
+                    {profile?.org_name?.substring(0, 2) || 'JS'}
                 </div>
             </div>
         </header>

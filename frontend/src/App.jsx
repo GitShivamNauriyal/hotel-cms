@@ -10,30 +10,24 @@ import InventoryPage from "./pages/InventoryPage"
 import BIPage from "./pages/BIPage"
 import ChannelManagerPage from "./pages/ChannelManagerPage"
 import LoginPage from "./pages/LoginPage"
-
-import { MOCK_RESERVATIONS as initialData } from "./modules/stay-view/constants/mockData"
+import { api } from "./api"
 
 export default function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(() => JSON.parse(sessionStorage.getItem('isAuthenticated') || 'false'))
     const [userRole, setUserRole] = useState(() => sessionStorage.getItem('userRole') || null) 
     const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('activeTab') || "rooms")
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+    
+    // Dynamic Global Data
+    const [profile, setProfile] = useState(null)
+    const [reservations, setReservations] = useState([])
+    const [rooms, setRooms] = useState([])
+    const [roomTypes, setRoomTypes] = useState([])
+    const [isLoadingData, setIsLoadingData] = useState(false)
 
-    const [reservations, setReservations] = useState(() => {
-        const saved = sessionStorage.getItem('reservations');
-        return saved ? JSON.parse(saved) : initialData;
-    })
-
-    const [rooms, setRooms] = useState(() => {
-        const saved = sessionStorage.getItem('rooms');
-        return saved ? JSON.parse(saved) : [
-            { id: "101", type: "Deluxe", status: "available", guest: null },
-            { id: "102", type: "Executive", status: "occupied", guest: "John Doe" },
-            { id: "103", type: "Single", status: "dirty", guest: null },
-            { id: "104", type: "Deluxe", status: "due-out", guest: "Jane Smith" },
-            { id: "105", type: "Family", status: "maintenance", guest: null },
-        ];
-    })
+    // Data Sync Trigger (bump this to refetch)
+    const [syncTick, setSyncTick] = useState(0)
+    const triggerSync = () => setSyncTick(prev => prev + 1)
 
     useEffect(() => {
         if (userRole === 'super_admin') {
@@ -46,9 +40,26 @@ export default function App() {
         if (userRole) sessionStorage.setItem('userRole', userRole)
         else sessionStorage.removeItem('userRole')
         sessionStorage.setItem('activeTab', activeTab)
-        sessionStorage.setItem('reservations', JSON.stringify(reservations))
-        sessionStorage.setItem('rooms', JSON.stringify(rooms))
-    }, [isAuthenticated, userRole, activeTab, reservations, rooms])
+    }, [isAuthenticated, userRole, activeTab])
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            setIsLoadingData(true)
+            Promise.all([
+                api.getProfile().catch(() => null),
+                api.getReservations().catch(() => []),
+                api.getRooms().catch(() => []),
+                api.getRoomTypes().catch(() => [])
+            ]).then(([profData, resData, roomData, typeData]) => {
+                if (profData) setProfile(profData);
+                if (resData) setReservations(resData);
+                if (roomData) setRooms(roomData);
+                if (typeData) setRoomTypes(typeData);
+            }).finally(() => {
+                setIsLoadingData(false)
+            });
+        }
+    }, [isAuthenticated, syncTick])
 
     const handleLogin = async (email, password) => {
         try {
@@ -83,41 +94,40 @@ export default function App() {
         sessionStorage.clear();
         setIsAuthenticated(false);
         setUserRole(null);
-    }
-
-    const addReservation = (newRes) => {
-        setReservations((prev) => [
-            ...prev,
-            {
-                ...newRes,
-                id: `RES-${Math.floor(Math.random() * 9000) + 1000}`,
-            },
-        ])
+        setProfile(null);
+        setReservations([]);
+        setRooms([]);
     }
 
     if (!isAuthenticated) {
         return <LoginPage onLogin={handleLogin} />
     }
+
     const renderContent = () => {
+        if (isLoadingData && !profile) {
+            return <div className="h-full flex items-center justify-center font-bold text-text-muted">Loading Engine...</div>
+        }
+
         switch (activeTab) {
             case "rooms":
-                return <RoomGrid userRole={userRole} rooms={rooms} setRooms={setRooms} />
+                return <RoomGrid userRole={userRole} rooms={rooms} roomTypes={roomTypes} triggerSync={triggerSync} />
             case "stay":
-                return <StayViewPage userRole={userRole} rooms={rooms} reservations={reservations} />
+                return <StayViewPage userRole={userRole} rooms={rooms} reservations={reservations} triggerSync={triggerSync} />
             case "checkins":
-                return <CheckinsPage userRole={userRole} reservations={reservations} setReservations={setReservations} />
+                return <CheckinsPage userRole={userRole} reservations={reservations} triggerSync={triggerSync} />
             case "reservations":
                 return (
                     <ReservationsPage
                         reservations={reservations}
-                        addReservation={addReservation}
+                        roomTypes={roomTypes}
                         userRole={userRole}
+                        triggerSync={triggerSync}
                     />
                 )
             case "food":
-                return <FoodPage userRole={userRole} />
+                return <FoodPage userRole={userRole} reservations={reservations} triggerSync={triggerSync} />
             case "ledger":
-                return <LedgerPage userRole={userRole} />
+                return <LedgerPage userRole={userRole} reservations={reservations} triggerSync={triggerSync} />
             case "inventory":
                 return <InventoryPage userRole={userRole} />
             case "bi":
@@ -143,6 +153,7 @@ export default function App() {
             isOpen={isSidebarOpen}
             toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             onLogout={handleLogout}
+            profile={profile}
         >
             {renderContent()}
         </Layout>

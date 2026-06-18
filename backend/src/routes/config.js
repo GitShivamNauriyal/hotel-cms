@@ -84,4 +84,41 @@ router.post('/rooms', requireRoot, async (req, res) => {
     }
 });
 
+router.put('/room-types/:id', requireRoot, async (req, res) => {
+    const { name, base_price_per_night, max_occupancy, amenities } = req.body;
+    try {
+        const { rows } = await req.db.query(
+            `UPDATE room_types 
+             SET name = $1, base_price_per_night = $2, max_occupancy = $3, amenities = $4
+             WHERE id = $5
+             RETURNING *`,
+            [name, base_price_per_night, max_occupancy, JSON.stringify(amenities || []), req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Room type not found' });
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+router.put('/rooms/:id', requireRoot, async (req, res) => {
+    const { room_type_id, room_number } = req.body;
+    try {
+        const { rows } = await req.db.query(
+            `UPDATE rooms 
+             SET room_type_id = $1, room_number = $2
+             WHERE id = $3
+             RETURNING *`,
+            [room_type_id, room_number, req.params.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Room not found' });
+        res.json(rows[0]);
+    } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({ error: 'Room number already exists in this property.' });
+        }
+        res.status(400).json({ error: error.message });
+    }
+});
+
 module.exports = router;

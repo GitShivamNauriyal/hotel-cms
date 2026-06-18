@@ -8,9 +8,26 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
     const [filter, setFilter] = useState("All Rooms")
     const timelineStart = new Date()
 
+    const mappedRooms = rooms.map(r => ({
+        ...r,
+        id: r.id,
+        displayId: r.room_number,
+        type: r.room_type_name
+    }));
+
+    const mappedReservations = reservations.map(res => ({
+        ...res,
+        id: res.id,
+        roomId: res.room_id,
+        checkIn: res.check_in_date,
+        checkOut: res.check_out_date,
+        guest: res.guest_name,
+        status: res.status
+    }));
+
     const filteredResources = filter === "All Rooms" 
-        ? rooms 
-        : rooms.filter(r => r.type === filter);
+        ? mappedRooms 
+        : mappedRooms.filter(r => r.type === filter);
 
     return (
         <div className="h-full flex flex-col space-y-4">
@@ -24,7 +41,7 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
 
             <div className="flex-1 relative min-h-0">
                 <TimelineGrid resources={filteredResources}>
-                    {reservations.map((res) => {
+                    {mappedReservations.map((res) => {
                         const pos = calculateBarPosition(
                             res.checkIn,
                             res.checkOut,

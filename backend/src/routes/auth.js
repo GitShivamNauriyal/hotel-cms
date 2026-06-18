@@ -57,4 +57,20 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/me', require('../middleware/auth').requireAuth, async (req, res) => {
+    try {
+        const { rows } = await req.db.query(`
+            SELECT u.email, u.is_root, o.name as org_name
+            FROM users u
+            JOIN organizations o ON u.organization_id = o.id
+            WHERE u.id = $1
+        `, [req.user.user_id]);
+
+        if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = router;

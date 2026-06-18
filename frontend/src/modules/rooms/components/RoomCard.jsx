@@ -47,7 +47,7 @@ export default function RoomCard({ room, onStatusChange }) {
             <div className="flex justify-between items-start mb-6">
                 <div>
                     <h3 className="text-3xl text-text-main font-bold tracking-[-0.05em]">
-                        {room.id}
+                        {room.displayId || room.id}
                     </h3>
                     <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.2em] mt-1">
                         {room.type}

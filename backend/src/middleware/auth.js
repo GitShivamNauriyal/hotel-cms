@@ -27,9 +27,9 @@ async function requireAuth(req, res, next) {
     const client = await pool.connect();
     
     try {
-      await client.query("SELECT set_config('app.is_super_admin', 'false', true)");
+      await client.query("SELECT set_config('app.is_super_admin', 'false', false)");
       if (decoded.organization_id) {
-        await client.query("SELECT set_config('app.current_organization_id', $1, true)", [decoded.organization_id]);
+        await client.query("SELECT set_config('app.current_organization_id', $1, false)", [decoded.organization_id]);
       }
       
       // Attach the contextualized DB client to the request for route handlers to use safely
@@ -51,9 +51,15 @@ async function requireAuth(req, res, next) {
 
 // Global cleanup middleware to ensure DB client is released after request finishes
 function releaseDbClient(req, res, next) {
-  res.on('finish', () => {
+  res.on('finish', async () => {
     if (req.db) {
-      req.db.release();
+      try {
+        await req.db.query("SELECT set_config('app.current_organization_id', '', false), set_config('app.is_super_admin', '', false)");
+      } catch (e) {
+        console.error("Failed to clear RLS context:", e);
+      } finally {
+        req.db.release();
+      }
     }
   });
   next();
