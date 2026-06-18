@@ -20,7 +20,7 @@ const FILTERS = [
     "Maintenance",
 ]
 
-export default function RoomGrid() {
+export default function RoomGrid({ userRole }) {
     const [filter, setFilter] = useState("All")
 
     return (
@@ -43,6 +43,12 @@ export default function RoomGrid() {
                         </button>
                     ))}
                 </div>
+                
+                {userRole === "root" && (
+                    <button className="px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-sm">
+                        + Add Room
+                    </button>
+                )}
             </div>
 
             {/* Grid of Rooms */}

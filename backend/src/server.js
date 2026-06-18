@@ -8,6 +8,7 @@ const { testDbConnection } = require('./db');
 const { testRedisConnection } = require('./redis');
 
 const authRoutes = require('./routes/auth');
+const configRoutes = require('./routes/config');
 const { releaseDbClient } = require('./middleware/auth');
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(releaseDbClient);
 
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/config', configRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

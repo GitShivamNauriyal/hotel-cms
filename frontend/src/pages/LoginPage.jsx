@@ -114,10 +114,10 @@ export default function LoginPage({ onLogin }) {
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-4 px-4 bg-brand hover:bg-brand/90 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_8px_20px_-8px_rgba(37,99,235,0.5)]"
+                                className="w-full py-4 px-4 bg-brand hover:bg-brand/90 text-app-bg rounded-2xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_8px_20px_-8px_rgba(37,99,235,0.5)]"
                             >
                                 {isLoading ? (
-                                    <div className="w-5 h-5 border-2 text-white border-white/30 border-t-white rounded-full animate-spin" />
+                                    <div className="w-5 h-5 border-2 text-app-bg border-app-bg/30 border-t-app-bg rounded-full animate-spin" />
                                 ) : (
                                     <>
                                         Sign In

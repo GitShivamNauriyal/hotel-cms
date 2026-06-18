@@ -70,28 +70,29 @@ export default function App() {
     const renderContent = () => {
         switch (activeTab) {
             case "rooms":
-                return <RoomGrid />
+                return <RoomGrid userRole={userRole} />
             case "stay":
-                return <StayViewPage />
+                return <StayViewPage userRole={userRole} />
             case "checkins":
-                return <CheckinsPage />
+                return <CheckinsPage userRole={userRole} />
             case "reservations":
                 return (
                     <ReservationsPage
                         reservations={reservations}
                         addReservation={addReservation}
+                        userRole={userRole}
                     />
                 )
             case "food":
-                return <FoodPage />
+                return <FoodPage userRole={userRole} />
             case "ledger":
-                return <LedgerPage />
+                return <LedgerPage userRole={userRole} />
             case "inventory":
-                return <InventoryPage />
+                return <InventoryPage userRole={userRole} />
             case "bi":
-                return <BIPage />
+                return <BIPage userRole={userRole} />
             case "cm":
-                return <ChannelManagerPage />
+                return <ChannelManagerPage userRole={userRole} />
             case "super-admin":
                 return <SuperAdminPage />
             default:
