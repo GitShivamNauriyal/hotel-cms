@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { api } from "../api"
-import { Users, Mail, Settings as SettingsIcon, ShieldAlert, Trash2 } from "lucide-react"
+import { Users, Mail, Settings as SettingsIcon, ShieldAlert, Trash2, KeyRound } from "lucide-react"
 
 export default function SettingsPage({ userRole }) {
     if (userRole !== 'root') {
@@ -18,11 +18,12 @@ export default function SettingsPage({ userRole }) {
     const [staff, setStaff] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [selectedStaff, setSelectedStaff] = useState(null)
     const [error, setError] = useState("")
 
     const [newStaff, setNewStaff] = useState({ full_name: "", email: "", password: "", staff_category: "GENERAL", root_password: "" })
+    const [editStaffData, setEditStaffData] = useState({ full_name: "", email: "", password: "", staff_category: "GENERAL", root_password: "" })
     const [deletePassword, setDeletePassword] = useState("")
 
     const fetchStaff = async () => {
@@ -64,6 +65,40 @@ export default function SettingsPage({ userRole }) {
             
             setIsAddModalOpen(false)
             setNewStaff({ full_name: "", email: "", password: "", staff_category: "GENERAL", root_password: "" })
+            fetchStaff()
+        } catch (err) {
+            setError(err.message)
+        }
+    }
+
+    const handleEditStaff = async (e) => {
+        e.preventDefault()
+        setError("")
+        try {
+            const token = sessionStorage.getItem("token")
+            // Send only changed fields plus root_password
+            const payload = { root_password: editStaffData.root_password }
+            if (editStaffData.full_name !== selectedStaff.full_name) payload.full_name = editStaffData.full_name
+            if (editStaffData.email !== selectedStaff.email) payload.email = editStaffData.email
+            if (editStaffData.staff_category !== selectedStaff.staff_category) payload.staff_category = editStaffData.staff_category
+            if (editStaffData.password) payload.password = editStaffData.password
+
+            if (Object.keys(payload).length === 1) throw new Error("No fields were changed")
+
+            const res = await fetch(`http://localhost:4000/api/v1/staff/${selectedStaff.id}`, {
+                method: "PUT",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            })
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.error || "Failed to update staff")
+            
+            setIsEditModalOpen(false)
+            setSelectedStaff(null)
+            setEditStaffData({ full_name: "", email: "", password: "", staff_category: "GENERAL", root_password: "" })
             fetchStaff()
         } catch (err) {
             setError(err.message)
@@ -140,12 +175,31 @@ export default function SettingsPage({ userRole }) {
                                             </span>
                                         </td>
                                         <td className="py-4 px-4 text-right">
-                                            <button 
-                                                onClick={() => { setError(""); setSelectedStaff(user); setIsDeleteModalOpen(true); }}
-                                                className="text-sm font-bold text-status-error-text hover:underline flex items-center gap-1 justify-end ml-auto"
-                                            >
-                                                <Trash2 size={16} /> Remove
-                                            </button>
+                                            <div className="flex items-center justify-end gap-4">
+                                                <button 
+                                                    onClick={() => { 
+                                                        setError(""); 
+                                                        setSelectedStaff(user); 
+                                                        setEditStaffData({ 
+                                                            full_name: user.full_name || "", 
+                                                            email: user.email, 
+                                                            password: "", 
+                                                            staff_category: user.staff_category || "GENERAL", 
+                                                            root_password: "" 
+                                                        });
+                                                        setIsEditModalOpen(true); 
+                                                    }}
+                                                    className="text-sm font-bold text-brand hover:text-brand-hover hover:underline flex items-center gap-1"
+                                                >
+                                                    <KeyRound size={16} /> Edit
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setError(""); setSelectedStaff(user); setIsDeleteModalOpen(true); }}
+                                                    className="text-sm font-bold text-status-error-text hover:underline flex items-center gap-1"
+                                                >
+                                                    <Trash2 size={16} /> Remove
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -200,6 +254,52 @@ export default function SettingsPage({ userRole }) {
                             <div className="flex justify-end gap-3 mt-8">
                                 <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-text-secondary hover:bg-card-bg-hover">Cancel</button>
                                 <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-brand text-[var(--brand-text)] hover:bg-brand-hover">Create Account</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Staff Modal */}
+            {isEditModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="bg-card-bg p-8 rounded-3xl w-[450px] border border-border-subtle shadow-2xl">
+                        <h2 className="text-xl font-bold text-text-main mb-6">Edit Staff Account</h2>
+                        {error && <div className="mb-4 p-3 bg-status-error-bg text-status-error-text rounded-xl text-sm font-bold">{error}</div>}
+                        <form onSubmit={handleEditStaff} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Full Name</label>
+                                <input required className="w-full bg-app-bg border border-border-subtle rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-brand transition-colors"
+                                    value={editStaffData.full_name} onChange={(e) => setEditStaffData({...editStaffData, full_name: e.target.value})} placeholder="Jane Doe" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Email Address</label>
+                                <input required type="email" className="w-full bg-app-bg border border-border-subtle rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-brand transition-colors"
+                                    value={editStaffData.email} onChange={(e) => setEditStaffData({...editStaffData, email: e.target.value})} placeholder="jane@hotel.com" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">New Password (Optional)</label>
+                                <input type="password" className="w-full bg-app-bg border border-border-subtle rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-brand transition-colors"
+                                    value={editStaffData.password} onChange={(e) => setEditStaffData({...editStaffData, password: e.target.value})} placeholder="Leave blank to keep current" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">Category</label>
+                                <select required className="w-full bg-app-bg border border-border-subtle rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-brand transition-colors appearance-none"
+                                    value={editStaffData.staff_category} onChange={(e) => setEditStaffData({...editStaffData, staff_category: e.target.value})}>
+                                    <option value="GENERAL">General</option>
+                                    <option value="FRONT_DESK">Front Desk</option>
+                                    <option value="HOUSEKEEPING">Housekeeping</option>
+                                    <option value="MANAGER">Manager</option>
+                                </select>
+                            </div>
+                            <div className="pt-4 border-t border-border-subtle mt-6">
+                                <label className="block text-xs font-bold text-status-error-text uppercase tracking-wider mb-2">Verify Root Password</label>
+                                <input required type="password" className="w-full bg-app-bg border border-status-error-text/30 rounded-xl px-4 py-3 text-text-main focus:outline-none focus:border-status-error-text transition-colors"
+                                    value={editStaffData.root_password} onChange={(e) => setEditStaffData({...editStaffData, root_password: e.target.value})} placeholder="Enter your root password to confirm" />
+                            </div>
+                            <div className="flex justify-end gap-3 mt-8">
+                                <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-text-secondary hover:bg-card-bg-hover">Cancel</button>
+                                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-brand text-[var(--brand-text)] hover:bg-brand-hover">Save Changes</button>
                             </div>
                         </form>
                     </div>

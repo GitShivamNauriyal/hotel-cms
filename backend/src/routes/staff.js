@@ -108,4 +108,82 @@ router.delete('/:id', requireAuth, requireRoot, async (req, res) => {
     }
 });
 
+// PUT /api/v1/staff/:id - Edit staff
+router.put('/:id', requireAuth, requireRoot, async (req, res) => {
+    const { id } = req.params;
+    const { email, password, full_name, staff_category, root_password } = req.body;
+
+    if (!root_password) {
+        return res.status(400).json({ error: 'Root password required' });
+    }
+
+    try {
+        await req.db.query('BEGIN');
+        
+        // 1. Verify root password
+        const rootUser = await req.db.query('SELECT password_hash FROM users WHERE id = $1', [req.user.user_id]);
+        if (rootUser.rows.length === 0) throw new Error('Root user not found');
+        
+        const isMatch = await bcrypt.compare(root_password, rootUser.rows[0].password_hash);
+        if (!isMatch) {
+            await req.db.query('ROLLBACK');
+            return res.status(401).json({ error: 'Invalid root password' });
+        }
+
+        // 2. Build update query dynamically
+        let updates = [];
+        let values = [];
+        let idx = 1;
+
+        if (email) {
+            updates.push(`email = $${idx++}`);
+            values.push(email);
+        }
+        if (full_name) {
+            updates.push(`full_name = $${idx++}`);
+            values.push(full_name);
+        }
+        if (staff_category) {
+            updates.push(`staff_category = $${idx++}`);
+            values.push(staff_category);
+        }
+        if (password) {
+            const password_hash = await bcrypt.hash(password, 10);
+            updates.push(`password_hash = $${idx++}`);
+            values.push(password_hash);
+        }
+
+        if (updates.length === 0) {
+            await req.db.query('ROLLBACK');
+            return res.status(400).json({ error: 'No fields to update' });
+        }
+
+        values.push(id);
+        values.push(req.user.organization_id);
+
+        const query = `
+            UPDATE users 
+            SET ${updates.join(', ')} 
+            WHERE id = $${idx} AND organization_id = $${idx + 1} AND is_root = false AND deleted_at IS NULL
+            RETURNING id, email, full_name, staff_category, created_at
+        `;
+
+        const { rows, rowCount } = await req.db.query(query, values);
+
+        if (rowCount === 0) {
+            await req.db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Staff not found or access denied' });
+        }
+
+        await req.db.query('COMMIT');
+        res.json(rows[0]);
+    } catch (error) {
+        await req.db.query('ROLLBACK');
+        if (error.code === '23505') {
+            return res.status(409).json({ error: 'Email already exists' });
+        }
+        res.status(500).json({ error: 'Failed to update staff' });
+    }
+});
+
 module.exports = router;

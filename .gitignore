@@ -36,3 +36,8 @@ dist-ssr
 
 *.md
 !README.md
+
+
+#notes
+plans
+plans/*

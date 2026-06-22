@@ -2,7 +2,7 @@ import { motion } from "motion/react"
 import { hapticWidgets } from "../../../lib/motion"
 import { User, Sparkles, Wrench, AlertCircle, Clock } from "lucide-react"
 
-export default function RoomCard({ room, onStatusChange }) {
+export default function RoomCard({ room, onClick }) {
     const statusBg = {
         available: "var(--color-status-available-bg)",
         occupied: "var(--color-status-occupied-bg)",
@@ -42,6 +42,7 @@ export default function RoomCard({ room, onStatusChange }) {
         <motion.div
             whileHover={hapticWidgets.hover}
             whileTap={hapticWidgets.tap}
+            onClick={() => onClick && onClick(room)}
             className="bg-card-bg rounded-3xl border border-border-subtle p-5 shadow-sm cursor-pointer relative overflow-hidden group hover-lift"
         >
             <div className="flex justify-between items-start mb-6">
@@ -66,27 +67,15 @@ export default function RoomCard({ room, onStatusChange }) {
 
             <div className="mt-8 flex items-end justify-between">
                 <div>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (!onStatusChange) return;
-                            const cycle = {
-                                "available": "occupied",
-                                "occupied": "dirty",
-                                "dirty": "maintenance",
-                                "maintenance": "available",
-                                "due-out": "available" // simplified
-                            };
-                            onStatusChange(room.id, cycle[room.status] || "available");
-                        }}
-                        className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider hover:brightness-90 active:scale-95 transition-all"
+                    <div
+                        className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-block"
                         style={{
                             backgroundColor: statusBg[room.status],
                             color: statusText[room.status],
                         }}
                     >
                         {room.status.replace("-", " ")}
-                    </button>
+                    </div>
                     <p className="text-[13px] mt-4 font-medium truncate max-w-[120px] text-text-secondary">
                         {room.guest || (
                             <span className="text-text-muted/40 italic">

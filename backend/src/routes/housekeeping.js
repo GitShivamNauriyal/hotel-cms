@@ -9,7 +9,9 @@ const VALID_TRANSITIONS = {
     'AVAILABLE': ['OCCUPIED', 'DIRTY', 'MAINTENANCE'],
     'OCCUPIED': ['DIRTY', 'DUE_OUT'],
     'DUE_OUT': ['DIRTY'],
-    'DIRTY': ['AVAILABLE', 'MAINTENANCE'],
+    'DIRTY': ['CLEAN', 'MAINTENANCE'],
+    'CLEAN': ['INSPECTED', 'DIRTY', 'AVAILABLE'],
+    'INSPECTED': ['AVAILABLE', 'DIRTY'],
     'MAINTENANCE': ['AVAILABLE', 'DIRTY']
 };
 
@@ -36,11 +38,11 @@ router.post('/:roomId/transition', async (req, res) => {
 
         const currentStatus = roomRows[0].housekeeping_status;
 
-        // Validate transition
-        if (!VALID_TRANSITIONS[currentStatus]?.includes(new_status)) {
+        // Validate transition (Bypass if user is root)
+        if (!req.user.is_root && !VALID_TRANSITIONS[currentStatus]?.includes(new_status)) {
             await req.db.query('ROLLBACK');
             return res.status(400).json({ 
-                error: `Invalid state transition from ${currentStatus} to ${new_status}` 
+                error: `Invalid state transition from ${currentStatus} to ${new_status} for staff` 
             });
         }
 

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import RoomCard from "./RoomCard"
+import RoomDetailsPanel from "./RoomDetailsPanel"
 import { api } from "../../../api"
 
 const FILTERS = [
@@ -33,6 +34,8 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
     const [isCreateTypeModalOpen, setIsCreateTypeModalOpen] = useState(false)
     const [newRoom, setNewRoom] = useState({ room_number: "", room_type_id: "" })
     const [newRoomType, setNewRoomType] = useState({ name: "", base_price_per_night: "", max_occupancy: "" })
+    const [selectedRoom, setSelectedRoom] = useState(null)
+    const [isPanelOpen, setIsPanelOpen] = useState(false)
 
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -140,7 +143,11 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
             {/* Grid of Rooms */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
                 {filteredRooms.map((room) => (
-                    <RoomCard key={room.id} room={room} onStatusChange={handleStatusChange} />
+                    <RoomCard 
+                        key={room.id} 
+                        room={room} 
+                        onClick={(r) => { setSelectedRoom(r); setIsPanelOpen(true); }} 
+                    />
                 ))}
                 {filteredRooms.length === 0 && (
                     <div className="col-span-full py-20 text-center text-text-muted font-bold text-lg">
@@ -237,6 +244,14 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
                     </div>
                 </div>
             )}
+
+            <RoomDetailsPanel 
+                room={selectedRoom}
+                isOpen={isPanelOpen}
+                onClose={() => setIsPanelOpen(false)}
+                onStatusChange={handleStatusChange}
+                userRole={userRole}
+            />
         </div>
     )
 }

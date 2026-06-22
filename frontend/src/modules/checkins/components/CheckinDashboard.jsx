@@ -1,33 +1,54 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { UserCheck, Search, ChevronRight, CheckCircle2 } from "lucide-react"
+import { UserCheck, Search, ChevronRight, CheckCircle2, LogOut, Clock } from "lucide-react"
 import { api } from "../../../api"
 
 export default function CheckinDashboard({ reservations = [], rooms = [], triggerSync }) {
+    const [activeTab, setActiveTab] = useState("Arrivals")
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedRooms, setSelectedRooms] = useState({})
 
-    // Filter for upcoming arriving guests
-    const upcoming = reservations.filter(
-        (res) => res.status === "UPCOMING"
-    )
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-    const filtered = upcoming.filter(
+    // Filters
+    const arrivals = reservations.filter(res => res.status === "UPCOMING" && new Date(res.check_in_date) <= today)
+    const inHouse = reservations.filter(res => res.status === "CHECKED_IN")
+    const departures = inHouse.filter(res => new Date(res.check_out_date) <= today)
+
+    const getCurrentList = () => {
+        if (activeTab === "Arrivals") return arrivals;
+        if (activeTab === "In-House") return inHouse;
+        if (activeTab === "Departures") return departures;
+        return [];
+    }
+
+    const filtered = getCurrentList().filter(
         (res) =>
             (res.guest_name || res.guest || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
             res.id.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const handleCheckIn = async (res) => {
-        const roomIdToAssign = res.room_id || selectedRooms[res.id];
+    const handleCheckIn = async (res, availableRooms) => {
+        // Auto-assign first available room if none selected
+        const roomIdToAssign = res.room_id || selectedRooms[res.id] || (availableRooms.length > 0 ? availableRooms[0].id : null);
         
         if (!roomIdToAssign) {
-            alert("Please select a physical room to assign before checking in.");
+            alert("No clean rooms available for this room type. Please select a physical room to assign before checking in.");
             return;
         }
 
         try {
             await api.updateReservationStatus(res.id, "CHECKED_IN", roomIdToAssign);
+            if (triggerSync) triggerSync();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    const handleCheckOut = async (res) => {
+        try {
+            await api.updateReservationStatus(res.id, "CHECKED_OUT", res.room_id);
             if (triggerSync) triggerSync();
         } catch (error) {
             alert(error.message);
@@ -49,8 +70,23 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
                         className="w-full pl-11 pr-4 py-3 bg-app-bg border border-border-subtle rounded-2xl text-text-main placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-transparent transition-all"
                     />
                 </div>
-                <div className="text-sm font-bold text-text-muted bg-app-bg px-4 py-3 rounded-2xl border border-border-subtle">
-                    {upcoming.length} Arriving Today
+                <div className="flex bg-app-bg p-1 rounded-2xl border border-border-subtle">
+                    {["Arrivals", "In-House", "Departures"].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+                                activeTab === tab
+                                    ? "bg-card-bg text-brand shadow-sm border border-border-subtle"
+                                    : "text-text-muted hover:text-text-main"
+                            }`}
+                        >
+                            {tab} 
+                            <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-brand/10 text-brand">
+                                {tab === "Arrivals" ? arrivals.length : tab === "In-House" ? inHouse.length : departures.length}
+                            </span>
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -80,8 +116,12 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
                                             {res.id.split('-')[0].toUpperCase()}
                                         </p>
                                     </div>
-                                    <span className="px-3 py-1 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-bold rounded-xl border border-yellow-500/20">
-                                        ARRIVAL
+                                    <span className={`px-3 py-1 text-xs font-bold rounded-xl border ${
+                                        activeTab === 'Arrivals' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20' :
+                                        activeTab === 'Departures' ? 'bg-status-error-bg text-status-error-text border-status-error-text/20' :
+                                        'bg-status-info-bg text-status-info-text border-status-info-text/20'
+                                    }`}>
+                                        {activeTab.toUpperCase()}
                                     </span>
                                 </div>
                                 <div className="bg-app-bg p-3 rounded-2xl border border-border-subtle flex justify-between items-center">
@@ -91,23 +131,25 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
                                     </div>
                                     <div className="w-px h-8 bg-border-subtle" />
                                     <div className="space-y-1 text-right">
-                                        <p className="text-[10px] uppercase font-bold text-text-muted tracking-widest">Check In</p>
-                                        <p className="text-sm font-semibold text-text-main">{new Date(res.check_in_date || res.checkin).toLocaleDateString()}</p>
+                                        <p className="text-[10px] uppercase font-bold text-text-muted tracking-widest">{activeTab === 'Arrivals' ? 'Check In' : 'Check Out'}</p>
+                                        <p className="text-sm font-semibold text-text-main">
+                                            {new Date(activeTab === 'Arrivals' ? (res.check_in_date || res.checkin) : (res.check_out_date || res.checkout)).toLocaleDateString()}
+                                        </p>
                                     </div>
                                 </div>
 
-                                {!res.room_id && (
+                                {activeTab === "Arrivals" && !res.room_id && (
                                     <div className="pt-2">
                                         <label className="text-[10px] uppercase font-bold text-text-muted tracking-widest mb-1 block">Assign Physical Room</label>
                                         <select 
                                             className="w-full bg-card-bg border border-border-subtle p-3 rounded-xl text-text-main text-sm focus:border-brand outline-none appearance-none"
-                                            value={selectedRooms[res.id] || ''}
+                                            value={selectedRooms[res.id] || (availableRooms.length > 0 ? availableRooms[0].id : '')}
                                             onChange={(e) => setSelectedRooms(prev => ({...prev, [res.id]: e.target.value}))}
                                         >
-                                            <option value="" className="bg-app-bg text-text-main">-- Select Available Room --</option>
+                                            {availableRooms.length === 0 && <option value="">No clean rooms available</option>}
                                             {availableRooms.map(r => (
                                                 <option key={r.id} value={r.id} className="bg-app-bg text-text-main">
-                                                    Room {r.room_number}
+                                                    Room {r.room_number} (Auto-Selected)
                                                 </option>
                                             ))}
                                         </select>
@@ -121,14 +163,24 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
                                 )}
                             </div>
 
-                            <button
-                                onClick={() => handleCheckIn(res)}
-                                disabled={!res.room_id && !selectedRooms[res.id]}
-                                className="mt-6 w-full py-4 bg-brand text-[var(--brand-text)] font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-brand/20 uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <CheckCircle2 size={16} />
-                                Complete Check-In
-                            </button>
+                            {activeTab === "Arrivals" ? (
+                                <button
+                                    onClick={() => handleCheckIn(res, availableRooms)}
+                                    disabled={!res.room_id && availableRooms.length === 0 && !selectedRooms[res.id]}
+                                    className="mt-6 w-full py-4 bg-brand text-[var(--brand-text)] font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-brand/20 uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <CheckCircle2 size={16} />
+                                    Complete Check-In
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleCheckOut(res)}
+                                    className="mt-6 w-full py-4 bg-status-error-bg text-status-error-text font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-widest text-xs"
+                                >
+                                    <LogOut size={16} />
+                                    Complete Check-Out
+                                </button>
+                            )}
                         </motion.div>
                         );
                     })}
@@ -139,8 +191,8 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
                         <div className="w-16 h-16 rounded-full bg-brand/5 flex items-center justify-center mb-4 border border-brand/10">
                             <UserCheck size={32} className="text-text-muted" />
                         </div>
-                        <h3 className="text-lg font-black text-text-main">No pending arrivals</h3>
-                        <p className="text-sm text-text-muted font-medium mt-1">All guests for today have been checked in or none match search.</p>
+                        <h3 className="text-lg font-black text-text-main">No guests found</h3>
+                        <p className="text-sm text-text-muted font-medium mt-1">There are no guests in this category.</p>
                     </div>
                 )}
             </div>
