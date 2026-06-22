@@ -1,7 +1,7 @@
 import { motion } from "motion/react"
 import { hapticWidgets } from "../../../lib/motion"
 
-export default function ReservationBar({ reservation, position }) {
+export default function ReservationBar({ reservation, position, rowIndex, onReassign, availableRooms = [] }) {
     const getStatusTheme = (status) => {
         switch (status) {
             case "CHECKED_IN":
@@ -19,10 +19,25 @@ export default function ReservationBar({ reservation, position }) {
 
     const theme = getStatusTheme(reservation.status)
 
+    const handleDragEnd = (event, info) => {
+        if (!onReassign) return;
+        const rowHeight = 64;
+        const rowsMoved = Math.round(info.offset.y / rowHeight);
+        const newRowIndex = rowIndex + rowsMoved;
+        
+        if (newRowIndex !== rowIndex && newRowIndex >= 0 && newRowIndex < availableRooms.length) {
+            onReassign(availableRooms[newRowIndex].id);
+        }
+    }
+
     return (
         <motion.div
+            drag="y"
+            dragSnapToOrigin={true}
+            onDragEnd={handleDragEnd}
             whileHover={hapticWidgets.hover}
-            whileTap={hapticWidgets.tap}
+            whileTap={{ scale: 0.98, zIndex: 50 }}
+            whileDrag={{ scale: 1.05, zIndex: 100, opacity: 0.9 }}
             style={{
                 left: `${position.left + 128}px`, // +128px to account for the Room ID column
                 width: `${position.width}px`,

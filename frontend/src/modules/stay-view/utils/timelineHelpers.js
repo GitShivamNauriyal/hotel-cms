@@ -1,4 +1,4 @@
-import { differenceInDays, startOfDay } from "date-fns"
+import { differenceInHours, startOfDay } from "date-fns"
 
 export const calculateBarPosition = (
     checkIn,
@@ -6,14 +6,17 @@ export const calculateBarPosition = (
     timelineStartDate,
     cellWidth = 96,
 ) => {
-    const start = startOfDay(new Date(checkIn))
+    const start = new Date(checkIn)
     const timelineStart = startOfDay(new Date(timelineStartDate))
 
-    const offsetDays = differenceInDays(start, timelineStart)
-    const duration = differenceInDays(new Date(checkOut), start)
+    const offsetHours = differenceInHours(start, timelineStart)
+    const durationHours = differenceInHours(new Date(checkOut), start)
+
+    const offsetDays = offsetHours / 24
+    const durationDays = durationHours / 24
 
     return {
         left: offsetDays * cellWidth,
-        width: duration * cellWidth,
+        width: durationDays * cellWidth,
     }
 }

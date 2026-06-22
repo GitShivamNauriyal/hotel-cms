@@ -53,7 +53,7 @@ router.get('/folios/:reservationId', async (req, res) => {
  * Post a Charge or Payment
  */
 router.post('/folios/:folioId/entries', async (req, res) => {
-    const { type, amount, description } = req.body;
+    const { type, amount, description, checkOutGuest } = req.body;
     const org_id = req.user.organization_id;
 
     if (!['CHARGE', 'PAYMENT', 'REFUND'].includes(type)) {
@@ -104,6 +104,28 @@ router.post('/folios/:folioId/entries', async (req, res) => {
                     `UPDATE folios SET status = 'SETTLED' WHERE id = $1`,
                     [req.params.folioId]
                 );
+
+                if (checkOutGuest) {
+                    const { rows: folioData } = await req.db.query(
+                        `SELECT reservation_id FROM folios WHERE id = $1`,
+                        [req.params.folioId]
+                    );
+
+                    if (folioData.length > 0) {
+                        const reservation_id = folioData[0].reservation_id;
+                        const { rows: resRows } = await req.db.query(
+                            `UPDATE reservations SET status = 'CHECKED_OUT' WHERE id = $1 RETURNING room_id`,
+                            [reservation_id]
+                        );
+
+                        if (resRows.length > 0 && resRows[0].room_id) {
+                            await req.db.query(
+                                `UPDATE rooms SET housekeeping_status = 'DIRTY' WHERE id = $1`,
+                                [resRows[0].room_id]
+                            );
+                        }
+                    }
+                }
             }
         }
 

@@ -3,8 +3,9 @@ import TimelineGrid from "../modules/stay-view/components/TimelineGrid"
 import TimelineControls from "../modules/stay-view/components/TimelineControls"
 import ReservationBar from "../modules/stay-view/components/ReservationBar"
 import { calculateBarPosition } from "../modules/stay-view/utils/timelineHelpers"
+import { api } from "../api"
 
-export default function StayViewPage({ rooms = [], reservations = [] }) {
+export default function StayViewPage({ rooms = [], reservations = [], triggerSync }) {
     const [filter, setFilter] = useState("All Rooms")
     
     // Timeline State
@@ -38,6 +39,24 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
         ? mappedRooms 
         : mappedRooms.filter(r => r.type === filter);
 
+    const viewEndDate = new Date(timelineStartDate);
+    viewEndDate.setDate(viewEndDate.getDate() + viewDuration);
+
+    const visibleReservations = mappedReservations.filter(res => {
+        const resStart = new Date(res.checkIn);
+        const resEnd = new Date(res.checkOut);
+        return resStart < viewEndDate && resEnd > timelineStartDate;
+    });
+
+    const handleReassign = async (reservationId, newRoomId) => {
+        try {
+            await api.reassignReservation(reservationId, { room_id: newRoomId });
+            if (triggerSync) triggerSync();
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
     return (
         <div className="h-full flex flex-col space-y-4">
             <div className="flex justify-between items-center">
@@ -62,7 +81,7 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
                     startDate={timelineStartDate}
                     daysCount={viewDuration}
                 >
-                    {mappedReservations.map((res) => {
+                    {visibleReservations.map((res) => {
                         const pos = calculateBarPosition(
                             res.checkIn,
                             res.checkOut,
@@ -89,6 +108,9 @@ export default function StayViewPage({ rooms = [], reservations = [] }) {
                                         rowIndex * rowHeight +
                                         10,
                                 }}
+                                rowIndex={rowIndex}
+                                onReassign={(newRoomId) => handleReassign(res.id, newRoomId)}
+                                availableRooms={filteredResources}
                             />
                         )
                     })}

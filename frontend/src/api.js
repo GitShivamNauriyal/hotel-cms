@@ -43,6 +43,7 @@ export const api = {
     createGuest: (data) => fetch(`${BASE_URL}/reservations/guests`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(handleResponse),
     createReservation: (data) => fetch(`${BASE_URL}/reservations`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(handleResponse),
     updateReservationStatus: (id, status, room_id) => fetch(`${BASE_URL}/reservations/${id}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ status, room_id }) }).then(handleResponse),
+    reassignReservation: (id, data) => fetch(`${BASE_URL}/reservations/${id}/reassign`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(handleResponse),
     deleteReservation: (id) => fetch(`${BASE_URL}/reservations/${id}`, { method: 'DELETE', headers: getAuthHeaders() }).then(handleResponse),
 
     // Food

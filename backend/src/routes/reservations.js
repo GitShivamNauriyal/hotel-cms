@@ -171,4 +171,59 @@ router.put('/:id/status', async (req, res) => {
     }
 });
 
+// Reassign Room / Change Dates
+router.put('/:id/reassign', async (req, res) => {
+    const { room_id, check_in_date, check_out_date } = req.body;
+    const org_id = req.user.organization_id;
+
+    try {
+        await req.db.query('BEGIN');
+
+        // Check for overlaps with the new room and dates
+        if (room_id) {
+            await req.db.query(
+                `SELECT id FROM rooms WHERE id = $1 AND organization_id = $2 FOR UPDATE`,
+                [room_id, org_id]
+            );
+
+            const { rows: overlaps } = await req.db.query(
+                `SELECT id FROM reservations 
+                 WHERE room_id = $1 
+                 AND id != $2
+                 AND status != 'CANCELLED'
+                 AND organization_id = $3
+                 AND (check_in_date < $5 AND check_out_date > $4)`,
+                [room_id, req.params.id, org_id, check_in_date, check_out_date]
+            );
+
+            if (overlaps.length > 0) {
+                await req.db.query('ROLLBACK');
+                return res.status(409).json({ error: 'Room is already booked for the specified dates.' });
+            }
+        }
+
+        const { rows } = await req.db.query(
+            `UPDATE reservations 
+             SET room_id = COALESCE($1, room_id),
+                 check_in_date = COALESCE($2, check_in_date),
+                 check_out_date = COALESCE($3, check_out_date)
+             WHERE id = $4 AND organization_id = $5
+             RETURNING *`,
+            [room_id, check_in_date, check_out_date, req.params.id, org_id]
+        );
+
+        if (rows.length === 0) {
+            await req.db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+
+        await req.db.query('COMMIT');
+        res.json(rows[0]);
+
+    } catch (error) {
+        await req.db.query('ROLLBACK');
+        res.status(400).json({ error: error.message });
+    }
+});
+
 module.exports = router;

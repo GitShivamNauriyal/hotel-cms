@@ -1,17 +1,61 @@
 import { useState, useEffect } from "react"
-import { motion } from "motion/react"
-import { DollarSign, Search, ArrowUpRight, ArrowDownRight, FileText } from "lucide-react"
+import { motion, AnimatePresence } from "motion/react"
+import { DollarSign, Search, ArrowUpRight, ArrowDownRight, FileText, CreditCard } from "lucide-react"
 import { api } from "../../../api"
 
 export default function LedgerTable() {
     const [searchTerm, setSearchTerm] = useState("")
     const [ledger, setLedger] = useState([])
+    const [settleModalOpen, setSettleModalOpen] = useState(false)
+    const [activeFolio, setActiveFolio] = useState(null)
+    const [paymentAmount, setPaymentAmount] = useState("")
+    const [checkOutGuest, setCheckOutGuest] = useState(false)
 
-    useEffect(() => {
+    const fetchLedger = () => {
         api.getLedger()
            .then(data => setLedger(data))
            .catch(err => console.error(err))
+    }
+
+    useEffect(() => {
+        fetchLedger()
     }, [])
+
+    const openSettleModal = async (folioId) => {
+        try {
+            // First we need the reservation ID... wait, api.getFolio requires reservationId?
+            // Actually getFolio is by reservationId in finance.js: /folios/:reservationId
+            // But we only have folio_id here. 
+            // Wait, we modified getLedger to return reservation_id in finance.js!
+            // Let's use it.
+            const folioEntry = ledger.find(l => l.folio_id === folioId);
+            if (!folioEntry || !folioEntry.reservation_id) return;
+
+            const data = await api.getFolio(folioEntry.reservation_id);
+            setActiveFolio(data);
+            setPaymentAmount(data.balance);
+            setCheckOutGuest(false);
+            setSettleModalOpen(true);
+        } catch(error) {
+            alert(error.message);
+        }
+    }
+
+    const handleSettleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await api.addLedgerEntry(activeFolio.id, {
+                type: 'PAYMENT',
+                amount: parseFloat(paymentAmount),
+                description: 'Card Payment - Settled',
+                checkOutGuest
+            });
+            setSettleModalOpen(false);
+            fetchLedger();
+        } catch(error) {
+            alert(error.message);
+        }
+    }
 
     const filtered = ledger.filter(l => 
         l.folio_id.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -52,6 +96,7 @@ export default function LedgerTable() {
                             <th className="p-4">Description</th>
                             <th className="p-4 text-right">Amount</th>
                             <th className="p-4 text-center">Status</th>
+                            <th className="p-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,6 +132,16 @@ export default function LedgerTable() {
                                         {entry.folio_status}
                                     </span>
                                 </td>
+                                <td className="p-4 text-right">
+                                    {entry.folio_status !== 'SETTLED' && (
+                                        <button 
+                                            onClick={() => openSettleModal(entry.folio_id)}
+                                            className="px-3 py-1 bg-brand/10 text-brand rounded-lg text-xs font-bold hover:bg-brand/20 transition-colors"
+                                        >
+                                            Settle
+                                        </button>
+                                    )}
+                                </td>
                             </motion.tr>
                         ))}
                     </tbody>
@@ -95,6 +150,71 @@ export default function LedgerTable() {
                     <div className="p-10 text-center text-text-muted font-bold">No entries found.</div>
                 )}
             </div>
+
+            <AnimatePresence>
+                {settleModalOpen && activeFolio && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                        <motion.div 
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="w-full max-w-md bg-app-bg border border-border-subtle rounded-3xl p-6 shadow-2xl"
+                        >
+                            <h2 className="text-xl font-black text-text-main mb-6 flex items-center gap-2">
+                                <CreditCard className="text-brand" /> Settle Folio {activeFolio.id.split('-')[0]}
+                            </h2>
+
+                            <form onSubmit={handleSettleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Balance Due</label>
+                                    <div className="text-2xl font-black text-brand">${activeFolio.balance}</div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Payment Amount</label>
+                                    <input 
+                                        type="number" 
+                                        step="0.01" 
+                                        required 
+                                        value={paymentAmount} 
+                                        onChange={e => setPaymentAmount(e.target.value)} 
+                                        className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-lg font-bold focus:border-brand outline-none" 
+                                    />
+                                </div>
+
+                                <label className="flex items-center gap-3 p-3 bg-card-bg rounded-xl border border-border-subtle cursor-pointer hover:border-brand/50 transition-colors">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={checkOutGuest} 
+                                        onChange={e => setCheckOutGuest(e.target.checked)} 
+                                        className="w-5 h-5 accent-brand"
+                                    />
+                                    <div>
+                                        <div className="text-sm font-bold text-text-main">Check Out Guest</div>
+                                        <div className="text-xs text-text-muted">Automatically change reservation & room status</div>
+                                    </div>
+                                </label>
+
+                                <div className="flex gap-4 mt-6 pt-6 border-t border-border-subtle">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setSettleModalOpen(false)} 
+                                        className="flex-1 px-4 py-3 bg-card-bg text-text-main rounded-xl font-bold hover:bg-border-subtle transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-1 px-4 py-3 bg-brand text-[var(--brand-text)] rounded-xl font-bold shadow-lg shadow-brand/20 hover:brightness-110 active:scale-[0.98] transition-all"
+                                    >
+                                        Process Payment
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }
