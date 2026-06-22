@@ -116,7 +116,7 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
                             className={`px-4 py-2 rounded-xl text-[11px] font-bold transition-all tracking-wider
                ${
                    filter === f
-                       ? "bg-brand text-white shadow-md"
+                       ? "bg-brand text-[var(--brand-text)] shadow-md"
                        : "bg-transparent text-text-muted hover:text-brand hover:bg-card-bg"
                }`}
                         >
@@ -130,7 +130,7 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
                         <button onClick={() => setIsCreateTypeModalOpen(true)} className="px-4 py-2 bg-card-bg border border-border-subtle text-text-main text-xs font-bold rounded-xl hover:text-brand transition-colors shadow-sm">
                             + Add Type
                         </button>
-                        <button onClick={() => setIsCreateModalOpen(true)} className="px-4 py-2 bg-brand text-white text-xs font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-sm">
+                        <button onClick={() => setIsCreateModalOpen(true)} className="px-4 py-2 bg-brand text-[var(--brand-text)] text-xs font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-sm">
                             + Add Room
                         </button>
                     </div>
@@ -189,7 +189,7 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
                             </div>
                             <div className="flex justify-end gap-3 mt-8">
                                 <button type="button" onClick={() => setIsCreateTypeModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-text-secondary hover:bg-card-bg-hover">Cancel</button>
-                                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-brand text-white hover:bg-brand-hover">Deploy Type</button>
+                                <button type="submit" className="px-5 py-2.5 rounded-xl font-bold bg-brand text-[var(--brand-text)] hover:bg-brand-hover">Deploy Type</button>
                             </div>
                         </form>
                     </div>
@@ -231,7 +231,7 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
                             </div>
                             <div className="flex justify-end gap-3 mt-8">
                                 <button type="button" onClick={() => setIsCreateModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-text-secondary hover:bg-card-bg-hover">Cancel</button>
-                                <button type="submit" disabled={roomTypes.length === 0} className="px-5 py-2.5 rounded-xl font-bold bg-brand text-white hover:bg-brand-hover disabled:opacity-50">Deploy Room</button>
+                                <button type="submit" disabled={roomTypes.length === 0} className="px-5 py-2.5 rounded-xl font-bold bg-brand text-[var(--brand-text)] hover:bg-brand-hover disabled:opacity-50">Deploy Room</button>
                             </div>
                         </form>
                     </div>

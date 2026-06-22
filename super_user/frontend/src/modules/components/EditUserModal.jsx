@@ -115,7 +115,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSuccess }) {
                     <button
                         type="submit"
                         disabled={isLoading || !formData.super_admin_password}
-                        className="w-full mt-6 bg-brand hover:bg-brand-hover text-white font-bold py-4 px-6 rounded-2xl transition-all hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full mt-6 bg-brand hover:bg-brand-hover text-[var(--brand-text)] font-bold py-4 px-6 rounded-2xl transition-all hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isLoading ? 'Verifying & Saving...' : 'Save Changes'}
                     </button>

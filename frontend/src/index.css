@@ -55,6 +55,7 @@
         --brand: #000000;
         --brand-hover: #333333;
         --brand-accent: #3b82f6;
+        --brand-text: #ffffff;
 
         /* Light Status */
         --status-available-bg: #ecfdf5;
@@ -91,6 +92,7 @@
         --brand: #ffffff;
         --brand-hover: #cccccc;
         --brand-accent: #3b82f6;
+        --brand-text: #000000;
 
         /* Dark Status */
         --status-available-bg: #022c22;

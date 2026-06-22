@@ -167,7 +167,7 @@ export default function ReservationDetailSidebar({
                             <button className="py-4 rounded-2xl border border-border-subtle font-black text-xs uppercase hover:bg-card-bg transition-colors text-text-main">
                                 Print Invoice
                             </button>
-                            <button className="py-4 rounded-2xl bg-brand text-white font-black text-xs uppercase hover:brightness-110 transition-all shadow-lg shadow-brand/20">
+                            <button className="py-4 rounded-2xl bg-brand text-[var(--brand-text)] font-black text-xs uppercase hover:brightness-110 transition-all shadow-lg shadow-brand/20">
                                 Settle Payment
                             </button>
                         </div>

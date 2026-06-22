@@ -25,6 +25,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (rows[0].deleted_at) {
+      return res.status(403).json({ error: 'Account deactivated or deleted' });
+    }
+
     if (rows[0].billing_status === 'deactivated') {
       return res.status(403).json({ error: 'Deactivated account' });
     }

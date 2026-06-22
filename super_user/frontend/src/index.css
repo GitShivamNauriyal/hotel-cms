@@ -3,6 +3,7 @@
 @theme {
   --color-brand: #C2A878;
   --color-brand-hover: #D1B88A;
+  --brand-text: #000000;
   
   --color-app-bg: #0F1014;
   --color-card-bg: #15161A;

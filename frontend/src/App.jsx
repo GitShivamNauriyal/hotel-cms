@@ -2,13 +2,14 @@ import { useState, useEffect } from "react"
 import Layout from "./components/layout/Layout"
 import RoomGrid from "./modules/rooms/components/RoomGrid"
 import ReservationsPage from "./pages/ReservationPage"
-import StayViewPage from "./pages/StayviewPage"
+import StayViewPage from "./pages/StayViewPage"
 import CheckinsPage from "./pages/CheckinsPage"
 import FoodPage from "./pages/FoodPage"
 import LedgerPage from "./pages/LedgerPage"
 import InventoryPage from "./pages/InventoryPage"
 import BIPage from "./pages/BIPage"
 import ChannelManagerPage from "./pages/ChannelManagerPage"
+import SettingsPage from "./pages/SettingsPage"
 import LoginPage from "./pages/LoginPage"
 import { api } from "./api"
 
@@ -134,6 +135,8 @@ export default function App() {
                 return <BIPage userRole={userRole} />
             case "cm":
                 return <ChannelManagerPage userRole={userRole} />
+            case "settings":
+                return <SettingsPage userRole={userRole} />
             default:
                 return (
                     <div className="glass-panel p-10 rounded-3xl min-h-[400px] flex items-center justify-center">
@@ -154,6 +157,7 @@ export default function App() {
             toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
             onLogout={handleLogout}
             profile={profile}
+            userRole={userRole}
         >
             {renderContent()}
         </Layout>

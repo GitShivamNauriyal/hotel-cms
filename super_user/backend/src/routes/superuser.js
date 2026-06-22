@@ -95,9 +95,9 @@ router.get('/organizations/:id/users', async (req, res) => {
     const { id } = req.params;
     try {
         const { rows } = await pool.query(`
-            SELECT id, email, is_root, created_at
+            SELECT id, email, full_name, staff_category, is_root, created_at
             FROM users
-            WHERE organization_id = $1
+            WHERE organization_id = $1 AND deleted_at IS NULL
             ORDER BY created_at ASC
         `, [id]);
         res.json(rows);
@@ -168,6 +168,90 @@ router.put('/users/:id', async (req, res) => {
         if (err.code === '23505') {
             return res.status(400).json({ error: 'Email already in use' });
         }
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// POST /organizations/:id/staff
+router.post('/organizations/:id/staff', async (req, res) => {
+    const { id } = req.params;
+    const { email, password, full_name, staff_category, super_password } = req.body;
+
+    if (!email || !password || !full_name || !staff_category || !super_password) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        // Verify super user password
+        const saRes = await client.query('SELECT password_hash FROM super_users WHERE id = $1', [req.user.id]);
+        if (saRes.rows.length === 0) throw new Error('Super user not found');
+        
+        const isMatch = await bcrypt.compare(super_password, saRes.rows[0].password_hash);
+        if (!isMatch) {
+            await client.query('ROLLBACK');
+            return res.status(401).json({ error: 'Invalid super user password' });
+        }
+
+        const password_hash = await bcrypt.hash(password, 10);
+        const { rows } = await client.query(`
+            INSERT INTO users (organization_id, email, password_hash, full_name, staff_category, is_root)
+            VALUES ($1, $2, $3, $4, $5, false)
+            RETURNING id, email, full_name, staff_category, created_at
+        `, [id, email, password_hash, full_name, staff_category]);
+        
+        await client.query('COMMIT');
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error("POST /organizations/:id/staff error:", err);
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+        res.status(500).json({ error: 'Internal server error' });
+    } finally {
+        client.release();
+    }
+});
+
+// DELETE /organizations/:id/staff/:staffId
+router.delete('/organizations/:id/staff/:staffId', async (req, res) => {
+    const { id, staffId } = req.params;
+    const { super_password } = req.body;
+
+    if (!super_password) {
+        return res.status(400).json({ error: 'Super Admin password required' });
+    }
+
+    try {
+        await pool.query('BEGIN');
+        
+        const saRes = await pool.query('SELECT password_hash FROM super_users WHERE id = $1', [req.user.id]);
+        if (saRes.rows.length === 0) throw new Error('Super Admin not found');
+        
+        const isMatch = await bcrypt.compare(super_password, saRes.rows[0].password_hash);
+        if (!isMatch) {
+            await pool.query('ROLLBACK');
+            return res.status(401).json({ error: 'Invalid Super Admin password' });
+        }
+
+        const { rowCount } = await pool.query(`
+            UPDATE users SET deleted_at = CURRENT_TIMESTAMP 
+            WHERE id = $1 AND organization_id = $2 AND is_root = false AND deleted_at IS NULL
+        `, [staffId, id]);
+
+        if (rowCount === 0) {
+            await pool.query('ROLLBACK');
+            return res.status(404).json({ error: 'Staff not found or already deleted' });
+        }
+
+        await pool.query('COMMIT');
+        res.json({ message: 'Staff successfully deleted' });
+    } catch (error) {
+        await pool.query('ROLLBACK');
+        console.error("DELETE staff error:", error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

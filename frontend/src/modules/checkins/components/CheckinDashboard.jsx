@@ -124,7 +124,7 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
                             <button
                                 onClick={() => handleCheckIn(res)}
                                 disabled={!res.room_id && !selectedRooms[res.id]}
-                                className="mt-6 w-full py-4 bg-brand text-white font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-brand/20 uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="mt-6 w-full py-4 bg-brand text-[var(--brand-text)] font-black rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-brand/20 uppercase tracking-widest text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <CheckCircle2 size={16} />
                                 Complete Check-In

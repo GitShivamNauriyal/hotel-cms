@@ -10,7 +10,8 @@ export default function Layout({
     isOpen,
     toggleSidebar,
     onLogout,
-    profile
+    profile,
+    userRole
 }) {
     return (
         <div className="flex h-screen w-full bg-app-bg overflow-hidden transition-colors duration-300">
@@ -19,6 +20,7 @@ export default function Layout({
                 toggleSidebar={toggleSidebar}
                 activeId={activeId}
                 setActiveId={setActiveId}
+                userRole={userRole}
             />
 
             <div className="flex flex-col flex-1 min-w-0 h-full">

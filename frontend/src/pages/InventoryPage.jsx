@@ -8,7 +8,7 @@ export default function InventoryPage({ userRole }) {
                     Inventory Management
                 </h1>
                 {userRole === "root" && (
-                    <button className="px-5 py-2.5 bg-brand text-white text-sm font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-md">
+                    <button className="px-5 py-2.5 bg-brand text-[var(--brand-text)] text-sm font-bold rounded-xl hover:bg-brand/90 transition-colors shadow-md">
                         + Add Configuration
                     </button>
                 )}

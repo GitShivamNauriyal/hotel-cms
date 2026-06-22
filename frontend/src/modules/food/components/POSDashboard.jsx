@@ -87,7 +87,7 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-black text-text-main">Menu Engine</h2>
                     {userRole === "root" && (
-                        <button onClick={() => setIsAddingItem(true)} className="px-4 py-2 bg-brand text-white rounded-xl text-xs font-bold hover:bg-brand-hover">
+                        <button onClick={() => setIsAddingItem(true)} className="px-4 py-2 bg-brand text-[var(--brand-text)] rounded-xl text-xs font-bold hover:bg-brand-hover">
                             + Add Menu Item
                         </button>
                     )}
@@ -142,7 +142,7 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
                                         <option value="Beverage">Beverage</option>
                                     </select>
                                 </div>
-                                <button type="submit" className="px-4 py-2 bg-brand text-white rounded-xl text-sm font-bold h-[38px] hover:bg-brand-hover">Save</button>
+                                <button type="submit" className="px-4 py-2 bg-brand text-[var(--brand-text)] rounded-xl text-sm font-bold h-[38px] hover:bg-brand-hover">Save</button>
                                 <button type="button" onClick={() => setIsAddingItem(false)} className="px-4 py-2 bg-app-bg text-text-muted rounded-xl text-sm font-bold border border-border-subtle h-[38px]">Cancel</button>
                             </form>
                         </motion.div>
@@ -198,7 +198,7 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
                     </div>
                     <button 
                         onClick={handlePostOrder}
-                        className="w-full py-4 bg-brand text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand/20 hover:brightness-110 active:scale-[0.98] transition-all"
+                        className="w-full py-4 bg-brand text-[var(--brand-text)] rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand/20 hover:brightness-110 active:scale-[0.98] transition-all"
                     >
                         Post to Folio
                     </button>

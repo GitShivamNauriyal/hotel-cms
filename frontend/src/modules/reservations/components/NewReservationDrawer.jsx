@@ -134,7 +134,7 @@ export default function NewReservationDrawer({
 
                             <button
                                 type="submit"
-                                className="w-full bg-brand text-white py-5 rounded-2xl font-black shadow-xl shadow-brand/30 hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-widest"
+                                className="w-full bg-brand text-[var(--brand-text)] py-5 rounded-2xl font-black shadow-xl shadow-brand/30 hover:brightness-110 active:scale-[0.98] transition-all uppercase tracking-widest"
                             >
                                 Finalize & Create Folio
                             </button>

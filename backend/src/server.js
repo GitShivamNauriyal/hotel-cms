@@ -37,6 +37,7 @@ const reservationsRoutes = require('./routes/reservations');
 const housekeepingRoutes = require('./routes/housekeeping');
 const financeRoutes = require('./routes/finance');
 const foodRoutes = require('./routes/food');
+const staffRoutes = require('./routes/staff');
 
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
@@ -45,6 +46,7 @@ app.use('/api/v1/reservations', reservationsRoutes);
 app.use('/api/v1/housekeeping', housekeepingRoutes);
 app.use('/api/v1/finance', financeRoutes);
 app.use('/api/v1/food', foodRoutes);
+app.use('/api/v1/staff', staffRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });

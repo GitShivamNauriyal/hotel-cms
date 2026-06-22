@@ -68,7 +68,7 @@ export default function SuperUserDashboard({ onLogout }) {
                 </div>
                 <button 
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-brand hover:bg-brand-hover text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-sm flex items-center gap-2"
+                    className="bg-brand hover:bg-brand-hover text-[var(--brand-text)] px-6 py-3 rounded-2xl font-bold transition-all shadow-sm flex items-center gap-2"
                 >
                     <Plus size={20} />
                     Deploy New Hotel

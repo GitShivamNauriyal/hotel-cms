@@ -11,6 +11,7 @@ import {
     Package,
     PieChart,
     Share2,
+    Settings as SettingsIcon,
 } from "lucide-react"
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
     { id: "inventory", label: "INVENTORY", icon: Package },
     { id: "bi", label: "BI", icon: PieChart },
     { id: "cm", label: "CHANNEL MANAGER", icon: Share2 },
+    { id: "settings", label: "SETTINGS", icon: SettingsIcon, rootOnly: true },
 ]
 
 export default function Sidebar({
@@ -30,6 +32,7 @@ export default function Sidebar({
     toggleSidebar,
     activeId,
     setActiveId,
+    userRole,
 }) {
     return (
         <motion.aside
@@ -61,14 +64,14 @@ export default function Sidebar({
             </div>
 
             <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto scrollbar-hide">
-                {navItems.map((item) => (
+                {navItems.filter(item => !item.rootOnly || userRole === 'root').map((item) => (
                     <motion.div
                         key={item.id}
                         whileTap={hapticWidgets.tap}
                         onClick={() => setActiveId(item.id)}
                         className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-300 group
               ${activeId === item.id
-                                ? "bg-brand text-white shadow-md"
+                                ? "bg-brand text-[var(--brand-text)] shadow-md"
                                 : "hover:bg-card-bg text-text-muted hover:text-brand hover:shadow-sm border border-transparent hover:border-border-subtle"
                             }`}
                     >
