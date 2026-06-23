@@ -19,6 +19,7 @@ export default function SettingsPage({ userRole }) {
     const [isLoading, setIsLoading] = useState(true)
     const [isAddModalOpen, setIsAddModalOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [selectedStaff, setSelectedStaff] = useState(null)
     const [error, setError] = useState("")
 

@@ -82,9 +82,9 @@ export default function ReservationDetailSidebar({
         }
     }
 
-    const nights = Math.max(1, Math.ceil((new Date(reservation.check_out_date) - new Date(reservation.check_in_date)) / (1000 * 60 * 60 * 24)));
-    const roomCharges = nights * (parseFloat(reservation.base_price_per_night) || 0);
-    const ledgerBalance = parseFloat(reservation.ledger_balance) || 0;
+    const nights = reservation ? Math.max(1, Math.ceil((new Date(reservation.check_out_date) - new Date(reservation.check_in_date)) / (1000 * 60 * 60 * 24))) : 0;
+    const roomCharges = reservation ? nights * (parseFloat(reservation.base_price_per_night) || 0) : 0;
+    const ledgerBalance = reservation ? parseFloat(reservation.ledger_balance) || 0 : 0;
     const totalBalance = roomCharges + ledgerBalance;
 
     return (
