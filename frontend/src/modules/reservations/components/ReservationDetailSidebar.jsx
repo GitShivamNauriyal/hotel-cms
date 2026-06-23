@@ -15,8 +15,41 @@ export default function ReservationDetailSidebar({
     const [invoiceViewOpen, setInvoiceViewOpen] = useState(false)
     const [settleModalOpen, setSettleModalOpen] = useState(false)
     const [activeFolio, setActiveFolio] = useState(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editForm, setEditForm] = useState({
+        guest_name: '',
+        guest_email: '',
+        guest_phone: '',
+        check_in_date: '',
+        check_out_date: ''
+    })
 
-    if (!reservation) return null
+    // Reset edit form when reservation changes
+    import { useEffect } from "react"
+    useEffect(() => {
+        if (reservation) {
+            setEditForm({
+                guest_name: reservation.guest_name || reservation.guest || '',
+                guest_email: reservation.guest_email || '',
+                guest_phone: reservation.guest_phone || '',
+                check_in_date: reservation.check_in_date ? new Date(reservation.check_in_date).toISOString().split('T')[0] : '',
+                check_out_date: reservation.check_out_date ? new Date(reservation.check_out_date).toISOString().split('T')[0] : ''
+            })
+            setIsEditing(false)
+        }
+    }, [reservation])
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            await api.updateReservationDetails(reservation.id, editForm)
+            if (triggerSync) triggerSync()
+            setIsEditing(false)
+        } catch (error) {
+            alert(error.message)
+        }
+    }
+
 
     const handleDelete = async () => {
         if (!window.confirm("Are you sure you want to cancel this reservation? It will be moved to the Cancelled tab.")) return;
@@ -56,7 +89,7 @@ export default function ReservationDetailSidebar({
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {isOpen && reservation && (
                 <>
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -84,13 +117,21 @@ export default function ReservationDetailSidebar({
                             </div>
                             <div className="flex items-center gap-2">
                                 {userRole === 'root' && (
-                                    <button
-                                        onClick={handleDelete}
-                                        className="p-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors"
-                                        title="Delete Reservation"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => setIsEditing(!isEditing)}
+                                            className="p-2 hover:bg-brand/10 text-brand rounded-xl transition-colors font-bold text-xs"
+                                        >
+                                            {isEditing ? 'CANCEL' : 'EDIT'}
+                                        </button>
+                                        <button
+                                            onClick={handleDelete}
+                                            className="p-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors"
+                                            title="Delete Reservation"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </>
                                 )}
                                 <button
                                     onClick={onClose}
@@ -103,40 +144,71 @@ export default function ReservationDetailSidebar({
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-8">
                             {/* Quick Info Grid */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
-                                    <p className="text-[10px] font-bold text-text-muted uppercase">
-                                        Check-in
-                                    </p>
-                                    <p className="font-bold text-text-main">
-                                        {new Date(reservation.check_in_date || reservation.checkin).toLocaleDateString()}
-                                    </p>
+                            {isEditing ? (
+                                <form onSubmit={handleEditSubmit} className="bg-card-bg p-5 rounded-2xl border border-border-subtle shadow-inner space-y-4">
+                                    <h3 className="text-xs font-black text-brand uppercase mb-2">Edit Reservation Details</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase">Check-in</label>
+                                            <input type="date" value={editForm.check_in_date} onChange={e => setEditForm({...editForm, check_in_date: e.target.value})} className="w-full bg-app-bg border border-border-subtle p-2 rounded-xl text-sm outline-none focus:border-brand" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase">Check-out</label>
+                                            <input type="date" value={editForm.check_out_date} onChange={e => setEditForm({...editForm, check_out_date: e.target.value})} className="w-full bg-app-bg border border-border-subtle p-2 rounded-xl text-sm outline-none focus:border-brand" />
+                                        </div>
+                                        <div className="col-span-2 space-y-1">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase">Guest Name</label>
+                                            <input type="text" value={editForm.guest_name} onChange={e => setEditForm({...editForm, guest_name: e.target.value})} className="w-full bg-app-bg border border-border-subtle p-2 rounded-xl text-sm outline-none focus:border-brand" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase">Email</label>
+                                            <input type="email" value={editForm.guest_email} onChange={e => setEditForm({...editForm, guest_email: e.target.value})} className="w-full bg-app-bg border border-border-subtle p-2 rounded-xl text-sm outline-none focus:border-brand" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase">Phone</label>
+                                            <input type="text" value={editForm.guest_phone} onChange={e => setEditForm({...editForm, guest_phone: e.target.value})} className="w-full bg-app-bg border border-border-subtle p-2 rounded-xl text-sm outline-none focus:border-brand" />
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="w-full bg-brand text-[var(--brand-text)] py-3 rounded-xl font-black shadow-lg shadow-brand/20 mt-4 uppercase text-xs">
+                                        Save Changes
+                                    </button>
+                                </form>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase">
+                                            Check-in
+                                        </p>
+                                        <p className="font-bold text-text-main">
+                                            {new Date(reservation.check_in_date || reservation.checkin).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase">
+                                            Check-out
+                                        </p>
+                                        <p className="font-bold text-text-main">
+                                            {new Date(reservation.check_out_date || reservation.checkout).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase">
+                                            Status
+                                        </p>
+                                        <span className="text-xs font-black text-brand uppercase">
+                                            {reservation.status}
+                                        </span>
+                                    </div>
+                                    <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase">
+                                            Room / Type
+                                        </p>
+                                        <span className="text-xs font-black text-text-main uppercase">
+                                            {reservation.room_number ? `Rm ${reservation.room_number}` : (reservation.room_type_name || 'N/A')}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
-                                    <p className="text-[10px] font-bold text-text-muted uppercase">
-                                        Check-out
-                                    </p>
-                                    <p className="font-bold text-text-main">
-                                        {new Date(reservation.check_out_date || reservation.checkout).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
-                                    <p className="text-[10px] font-bold text-text-muted uppercase">
-                                        Status
-                                    </p>
-                                    <span className="text-xs font-black text-brand uppercase">
-                                        {reservation.status}
-                                    </span>
-                                </div>
-                                <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
-                                    <p className="text-[10px] font-bold text-text-muted uppercase">
-                                        Room / Type
-                                    </p>
-                                    <span className="text-xs font-black text-text-main uppercase">
-                                        {reservation.room_number ? `Rm ${reservation.room_number}` : (reservation.room_type_name || 'N/A')}
-                                    </span>
-                                </div>
-                            </div>
+                            )}
 
                             {/* Folio / Financial Cluster */}
                             <section className="space-y-4">

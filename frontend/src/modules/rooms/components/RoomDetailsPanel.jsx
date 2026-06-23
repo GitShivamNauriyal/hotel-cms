@@ -20,8 +20,6 @@ export default function RoomDetailsPanel({ room, activeRes, isOpen, onClose, onS
         }
     }, [room, isOpen]);
 
-    if (!isOpen || !room) return null;
-
     // Staff can only manually transition to these states. Root can do any.
     const housekeepingStates = ["dirty", "clean", "inspected"];
     const allStates = ["available", "occupied", "dirty", "due-out", "maintenance"];
@@ -59,13 +57,14 @@ export default function RoomDetailsPanel({ room, activeRes, isOpen, onClose, onS
 
     return (
         <AnimatePresence>
-            <motion.div
-                initial={{ x: "100%", opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: "100%", opacity: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 right-0 w-[400px] bg-card-bg border-l border-border-subtle shadow-2xl z-50 flex flex-col"
-            >
+            {isOpen && room && (
+                <motion.div
+                    initial={{ x: "100%", opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "100%", opacity: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="fixed inset-y-0 right-0 w-[400px] bg-card-bg border-l border-border-subtle shadow-2xl z-50 flex flex-col"
+                >
                 {/* Header */}
                 <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-app-bg">
                     <div>
@@ -169,7 +168,8 @@ export default function RoomDetailsPanel({ room, activeRes, isOpen, onClose, onS
                         </div>
                     </div>
                 </div>
-            </motion.div>
+                </motion.div>
+            )}
 
             {invoiceViewOpen && activeFolio && (
                 <InvoicePrintView 

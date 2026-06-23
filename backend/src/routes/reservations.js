@@ -123,6 +123,44 @@ router.delete('/:id', requireRoot, async (req, res) => {
     }
 });
 
+// Update full reservation details (Root only)
+router.put('/:id', requireRoot, async (req, res) => {
+    const { check_in_date, check_out_date, guest_name, guest_email, guest_phone } = req.body;
+    try {
+        await req.db.query('BEGIN');
+        
+        // Update reservation dates
+        const { rows: resRows } = await req.db.query(
+            `UPDATE reservations 
+             SET check_in_date = COALESCE($1, check_in_date),
+                 check_out_date = COALESCE($2, check_out_date)
+             WHERE id = $3 AND organization_id = $4 RETURNING *`,
+            [check_in_date, check_out_date, req.params.id, req.user.organization_id]
+        );
+
+        if (resRows.length === 0) {
+            await req.db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+
+        // Update guest details
+        await req.db.query(
+            `UPDATE guests 
+             SET full_name = COALESCE($1, full_name),
+                 email = COALESCE($2, email),
+                 phone = COALESCE($3, phone)
+             WHERE id = $4`,
+            [guest_name, guest_email, guest_phone, resRows[0].guest_id]
+        );
+
+        await req.db.query('COMMIT');
+        res.json(resRows[0]);
+    } catch (error) {
+        await req.db.query('ROLLBACK');
+        res.status(400).json({ error: error.message });
+    }
+});
+
 // Update status (e.g. CHECKED_IN, CHECKED_OUT, CANCELLED)
 router.put('/:id/status', async (req, res) => {
     const { status, room_id } = req.body;
