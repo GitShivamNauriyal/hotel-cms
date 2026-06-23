@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X, CreditCard, User, History, Receipt, Trash2 } from "lucide-react"
 import { api } from "../../../api"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import InvoicePrintView from "../../ledger/components/InvoicePrintView"
 import SettlePaymentModal from "../../ledger/components/SettlePaymentModal"
 
@@ -25,7 +25,7 @@ export default function ReservationDetailSidebar({
     })
 
     // Reset edit form when reservation changes
-    import { useEffect } from "react"
+
     useEffect(() => {
         if (reservation) {
             setEditForm({

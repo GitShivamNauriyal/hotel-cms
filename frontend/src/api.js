@@ -51,6 +51,7 @@ export const api = {
     getFoodItems: () => fetch(`${BASE_URL}/food/items`, { headers: getAuthHeaders() }).then(handleResponse),
     createFoodItem: (data) => fetch(`${BASE_URL}/food/items`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(handleResponse),
     updateFoodItem: (id, data) => fetch(`${BASE_URL}/food/items/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(handleResponse),
+    deleteFoodItem: (id) => fetch(`${BASE_URL}/food/items/${id}`, { method: 'DELETE', headers: getAuthHeaders() }).then(handleResponse),
     getFoodOrders: () => fetch(`${BASE_URL}/food/orders`, { headers: getAuthHeaders() }).then(handleResponse),
     createFoodOrder: (data) => fetch(`${BASE_URL}/food/orders`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(data) }).then(handleResponse),
     updateFoodOrderStatus: (id, status) => fetch(`${BASE_URL}/food/orders/${id}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ status }) }).then(handleResponse),

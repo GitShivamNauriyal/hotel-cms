@@ -53,6 +53,20 @@ router.put('/items/:id', requireRoot, async (req, res) => {
     }
 });
 
+// Root: Delete food item
+router.delete('/items/:id', requireRoot, async (req, res) => {
+    try {
+        const { rowCount } = await req.db.query(
+            `DELETE FROM food_items WHERE id = $1`,
+            [req.params.id]
+        );
+        if (rowCount === 0) return res.status(404).json({ error: 'Food item not found' });
+        res.status(204).send();
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
 // --- FOOD ORDERS ---
 
 // Get all orders (with items)

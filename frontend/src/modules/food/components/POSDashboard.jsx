@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "motion/react"
-import { Utensils, Coffee, Wine, Plus, X } from "lucide-react"
+import { motion } from "motion/react"
+import { Utensils, X } from "lucide-react"
 import { api } from "../../../api"
+
+import FoodManagementModal from "./FoodManagementModal"
 
 export default function POSDashboard({ userRole, reservations = [], triggerSync }) {
     const [menuItems, setMenuItems] = useState([])
     const [cart, setCart] = useState([])
     const [selectedReservation, setSelectedReservation] = useState("")
-    const [isAddingItem, setIsAddingItem] = useState(false)
-    const [newItem, setNewItem] = useState({ name: "", price: "", category: "Breakfast" })
+    const [isMenuModalOpen, setIsMenuModalOpen] = useState(false)
 
     const activeReservations = reservations.filter(r => r.status === "CHECKED_IN")
 
@@ -46,7 +47,6 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
         if (cart.length === 0) return alert("Cart is empty.")
         
         try {
-            // Need to get the folio ID for this reservation
             const folio = await api.getFolio(selectedReservation)
             
             const itemsPayload = cart.map(item => ({
@@ -68,18 +68,6 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
         }
     }
 
-    const handleCreateMenuItem = async (e) => {
-        e.preventDefault()
-        try {
-            await api.createFoodItem(newItem)
-            setNewItem({ name: "", price: "", category: "Breakfast" })
-            setIsAddingItem(false)
-            fetchMenu()
-        } catch (error) {
-            alert(error.message)
-        }
-    }
-
     return (
         <div className="flex gap-6 h-[600px]">
             {/* Left: Menu Items */}
@@ -87,8 +75,8 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-black text-text-main">Menu Engine</h2>
                     {userRole === "root" && (
-                        <button onClick={() => setIsAddingItem(true)} className="px-4 py-2 bg-brand text-[var(--brand-text)] rounded-xl text-xs font-bold hover:bg-brand-hover">
-                            + Add Menu Item
+                        <button onClick={() => setIsMenuModalOpen(true)} className="px-4 py-2 bg-brand text-[var(--brand-text)] rounded-xl text-xs font-bold hover:bg-brand-hover">
+                            Manage Menu
                         </button>
                     )}
                 </div>
@@ -115,39 +103,6 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
                         <div className="col-span-full py-10 text-center text-text-muted">No menu items defined.</div>
                     )}
                 </div>
-
-                <AnimatePresence>
-                    {isAddingItem && (
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                            className="absolute inset-x-6 bottom-6 bg-card-bg border border-border-subtle rounded-2xl p-4 shadow-2xl z-10"
-                        >
-                            <form onSubmit={handleCreateMenuItem} className="flex gap-4 items-end">
-                                <div className="flex-1">
-                                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Item Name</label>
-                                    <input required value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} className="w-full bg-app-bg border border-border-subtle rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
-                                </div>
-                                <div className="w-24">
-                                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Price</label>
-                                    <input required type="number" step="0.01" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} className="w-full bg-app-bg border border-border-subtle rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
-                                </div>
-                                <div className="w-32">
-                                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Category</label>
-                                    <select value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} className="w-full bg-app-bg border border-border-subtle rounded-xl px-3 py-2 text-sm focus:border-brand outline-none">
-                                        <option value="Breakfast">Breakfast</option>
-                                        <option value="Lunch">Lunch</option>
-                                        <option value="Dinner">Dinner</option>
-                                        <option value="Beverage">Beverage</option>
-                                    </select>
-                                </div>
-                                <button type="submit" className="px-4 py-2 bg-brand text-[var(--brand-text)] rounded-xl text-sm font-bold h-[38px] hover:bg-brand-hover">Save</button>
-                                <button type="button" onClick={() => setIsAddingItem(false)} className="px-4 py-2 bg-app-bg text-text-muted rounded-xl text-sm font-bold border border-border-subtle h-[38px]">Cancel</button>
-                            </form>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
 
             {/* Right: Active Order Cart */}
@@ -204,6 +159,13 @@ export default function POSDashboard({ userRole, reservations = [], triggerSync 
                     </button>
                 </div>
             </div>
+
+            <FoodManagementModal 
+                isOpen={isMenuModalOpen}
+                onClose={() => setIsMenuModalOpen(false)}
+                triggerSync={fetchMenu}
+                menuItems={menuItems}
+            />
         </div>
     )
 }
