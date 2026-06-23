@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { generateTimelineDates } from "../utils/dateHelpers"
+import { TIMELINE_CONFIG } from "../utils/timelineHelpers"
 
 export default function TimelineGrid({ children, resources, startDate, daysCount = 14 }) {
     const dates = useMemo(() => generateTimelineDates(startDate, daysCount), [startDate, daysCount])
@@ -19,7 +20,8 @@ export default function TimelineGrid({ children, resources, startDate, daysCount
                         {dates.map((d) => (
                             <div
                                 key={d.formattedDate}
-                                className={`w-24 shrink-0 p-2 text-center border-r border-border-subtle flex flex-col items-center justify-center transition-colors relative
+                                style={{ width: `${TIMELINE_CONFIG.DAY_WIDTH_PX}px` }}
+                                className={`shrink-0 p-2 text-center border-r border-border-subtle flex flex-col items-center justify-center transition-colors relative
                                 ${d.isToday ? "bg-brand/10 border-b-2 border-b-brand" : ""} ${d.isWeekend ? "bg-app-bg/50" : ""}`}
                             >
                                 <span className={`text-[9px] font-bold uppercase tracking-widest ${d.isToday ? "text-brand" : "text-text-muted"}`}>
@@ -54,11 +56,19 @@ export default function TimelineGrid({ children, resources, startDate, daysCount
                             {dates.map((d) => (
                                 <div
                                     key={`${room.id}-${d.formattedDate}`}
-                                    className={`w-24 shrink-0 h-full border-r border-border-subtle/40 transition-colors relative
+                                    style={{ width: `${TIMELINE_CONFIG.DAY_WIDTH_PX}px` }}
+                                    className={`shrink-0 h-full border-r border-border-subtle/40 transition-colors relative
                                     ${d.isToday ? "bg-brand/5 border-l border-r border-brand/20" : ""} ${d.isWeekend ? "bg-app-bg/10" : ""}`}
                                 >
                                     {/* Indicator line for 'Today' */}
-                                    {d.isToday && <div className="absolute top-0 bottom-0 left-1/2 w-px bg-brand/30 -translate-x-1/2 pointer-events-none" />}
+                                    {d.isToday && <div className="absolute top-0 bottom-0 left-1/2 w-px bg-brand/30 -translate-x-1/2 pointer-events-none z-10" />}
+                                    
+                                    {/* Hourly markers grid */}
+                                    <div className="absolute inset-0 flex pointer-events-none opacity-40">
+                                        {[...Array(24)].map((_, i) => (
+                                            <div key={i} className="flex-1 border-r border-border-subtle/10" />
+                                        ))}
+                                    </div>
                                 </div>
                             ))}
                         </div>

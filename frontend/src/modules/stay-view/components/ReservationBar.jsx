@@ -48,10 +48,10 @@ export default function ReservationBar({ reservation, position, rowIndex, onReas
         >
             <div className="flex flex-col leading-tight">
                 <span className="text-[11px] font-bold truncate uppercase tracking-widest">
-                    {reservation.guestName}
+                    {reservation.guestName || reservation.guest}
                 </span>
                 <span className="text-[9px] opacity-80 font-semibold tracking-wide">
-                    {reservation.id} • {reservation.status}
+                    {reservation.id.substring(0, 8)}... • {reservation.status}
                 </span>
             </div>
         </motion.div>

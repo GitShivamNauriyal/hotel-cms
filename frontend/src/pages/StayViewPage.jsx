@@ -86,6 +86,7 @@ export default function StayViewPage({ rooms = [], reservations = [], triggerSyn
                             res.checkIn,
                             res.checkOut,
                             timelineStartDate,
+                            viewDuration
                         )
 
                         // Calculate rowIndex dynamically from filteredResources

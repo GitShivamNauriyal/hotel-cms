@@ -134,20 +134,56 @@ router.put('/:id/status', async (req, res) => {
             await req.db.query(`UPDATE reservations SET room_id = $1 WHERE id = $2`, [room_id, req.params.id]);
         }
 
-        const { rows } = await req.db.query(
-            `UPDATE reservations SET status = $1 WHERE id = $2 RETURNING *`,
-            [status, req.params.id]
-        );
+        let queryParams = [status, req.params.id];
+        let updateQuery = `UPDATE reservations SET status = $1`;
+
+        if (status === 'CHECKED_IN') {
+            updateQuery += `, check_in_date = CURRENT_TIMESTAMP`;
+        } else if (status === 'CHECKED_OUT') {
+            updateQuery += `, check_out_date = CURRENT_TIMESTAMP`;
+        }
+
+        updateQuery += ` WHERE id = $2 RETURNING *`;
+
+        const { rows } = await req.db.query(updateQuery, queryParams);
 
         if (rows.length === 0) {
             await req.db.query('ROLLBACK');
             return res.status(404).json({ error: 'Reservation not found' });
         }
 
-        // Enforce physical room assignment for CHECKED_IN
+        // Auto-assign clean room for CHECKED_IN if not assigned
         if (status === 'CHECKED_IN' && !rows[0].room_id) {
-            await req.db.query('ROLLBACK');
-            return res.status(400).json({ error: 'Cannot check-in without a physical room assigned.' });
+            const org_id = rows[0].organization_id || req.user.organization_id;
+            const resData = rows[0];
+            
+            const { rows: availableRooms } = await req.db.query(`
+                SELECT r.id 
+                FROM rooms r
+                WHERE r.room_type_id = $1 
+                  AND r.organization_id = $2
+                  AND r.housekeeping_status IN ('CLEAN', 'INSPECTED')
+                  AND r.id NOT IN (
+                      SELECT res.room_id 
+                      FROM reservations res 
+                      WHERE res.room_id IS NOT NULL 
+                        AND res.id != $3
+                        AND res.status != 'CANCELLED'
+                        AND res.organization_id = $2
+                        AND (res.check_in_date < $5 AND res.check_out_date > $4)
+                  )
+                ORDER BY r.housekeeping_status DESC -- Prefers INSPECTED over CLEAN
+                LIMIT 1 FOR UPDATE SKIP LOCKED
+            `, [resData.room_type_id, org_id, req.params.id, resData.check_in_date, resData.check_out_date]);
+
+            if (availableRooms.length === 0) {
+                await req.db.query('ROLLBACK');
+                return res.status(400).json({ error: 'No clean rooms available for auto-assignment. Please expedite housekeeping or assign manually.' });
+            }
+
+            const assignedRoomId = availableRooms[0].id;
+            await req.db.query(`UPDATE reservations SET room_id = $1 WHERE id = $2`, [assignedRoomId, req.params.id]);
+            rows[0].room_id = assignedRoomId; // Update local reference for subsequent logic
         }
 
         // Enforce zero balance for CHECKED_OUT
