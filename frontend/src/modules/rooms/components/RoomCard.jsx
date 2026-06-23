@@ -2,7 +2,7 @@ import { motion } from "motion/react"
 import { hapticWidgets } from "../../../lib/motion"
 import { User, Sparkles, Wrench, AlertCircle, Clock } from "lucide-react"
 
-export default function RoomCard({ room, onClick }) {
+export default function RoomCard({ room, onClick, onQuickClean }) {
     const statusBg = {
         available: "var(--color-status-available-bg)",
         occupied: "var(--color-status-occupied-bg)",
@@ -84,6 +84,15 @@ export default function RoomCard({ room, onClick }) {
                         )}
                     </p>
                 </div>
+                {room.status === 'dirty' && onQuickClean && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onQuickClean(room); }}
+                        className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-colors"
+                        title="Quick Clean"
+                    >
+                        <Sparkles size={16} />
+                    </button>
+                )}
             </div>
         </motion.div>
     )

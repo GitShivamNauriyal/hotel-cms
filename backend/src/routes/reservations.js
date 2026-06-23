@@ -150,6 +150,34 @@ router.put('/:id/status', async (req, res) => {
             return res.status(400).json({ error: 'Cannot check-in without a physical room assigned.' });
         }
 
+        // Enforce zero balance for CHECKED_OUT
+        if (status === 'CHECKED_OUT') {
+            const { rows: folios } = await req.db.query(
+                `SELECT id FROM folios WHERE reservation_id = $1`,
+                [req.params.id]
+            );
+
+            if (folios.length > 0) {
+                const folioId = folios[0].id;
+                const { rows: ledger } = await req.db.query(
+                    `SELECT type, SUM(amount) as total FROM ledger_entries WHERE folio_id = $1 GROUP BY type`,
+                    [folioId]
+                );
+
+                let balance = 0;
+                ledger.forEach(entry => {
+                    const total = parseFloat(entry.total);
+                    if (entry.type === 'CHARGE') balance += total;
+                    if (entry.type === 'PAYMENT') balance -= total;
+                });
+
+                if (balance > 0) {
+                    await req.db.query('ROLLBACK');
+                    return res.status(402).json({ error: 'Folio has an outstanding balance. Please settle payment before checking out.' });
+                }
+            }
+        }
+
         // Auto-change room housekeeping status
         if (status === 'CHECKED_IN' && rows[0].room_id) {
             await req.db.query(

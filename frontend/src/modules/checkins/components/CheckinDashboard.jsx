@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react"
 import { UserCheck, Search, ChevronRight, CheckCircle2, LogOut, Clock } from "lucide-react"
 import { api } from "../../../api"
 
-export default function CheckinDashboard({ reservations = [], rooms = [], triggerSync }) {
+export default function CheckinDashboard({ reservations = [], rooms = [], triggerSync, onNavigate }) {
     const [activeTab, setActiveTab] = useState("Arrivals")
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedRooms, setSelectedRooms] = useState({})
@@ -51,7 +51,13 @@ export default function CheckinDashboard({ reservations = [], rooms = [], trigge
             await api.updateReservationStatus(res.id, "CHECKED_OUT", res.room_id);
             if (triggerSync) triggerSync();
         } catch (error) {
-            alert(error.message);
+            if (error.message.includes("outstanding balance")) {
+                if (window.confirm(`Checkout Blocked: Guest ${res.guest_name || res.id} has an outstanding balance.\n\nClick OK to go to the Reservations page to settle the payment.`)) {
+                    if (onNavigate) onNavigate("reservations");
+                }
+            } else {
+                alert(error.message);
+            }
         }
     }
 

@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { DollarSign, Search, ArrowUpRight, ArrowDownRight, FileText, CreditCard } from "lucide-react"
+import { DollarSign, Search, ArrowUpRight, ArrowDownRight, FileText, CreditCard, Printer } from "lucide-react"
 import { api } from "../../../api"
+import InvoicePrintView from "./InvoicePrintView"
 
 export default function LedgerTable() {
     const [searchTerm, setSearchTerm] = useState("")
     const [ledger, setLedger] = useState([])
     const [settleModalOpen, setSettleModalOpen] = useState(false)
+    const [invoiceViewOpen, setInvoiceViewOpen] = useState(false)
     const [activeFolio, setActiveFolio] = useState(null)
     const [paymentAmount, setPaymentAmount] = useState("")
+    const [paymentMethod, setPaymentMethod] = useState("Credit Card")
     const [checkOutGuest, setCheckOutGuest] = useState(false)
 
     const fetchLedger = () => {
@@ -35,7 +38,20 @@ export default function LedgerTable() {
             setActiveFolio(data);
             setPaymentAmount(data.balance);
             setCheckOutGuest(false);
+            setPaymentMethod("Credit Card");
             setSettleModalOpen(true);
+        } catch(error) {
+            alert(error.message);
+        }
+    }
+
+    const openInvoiceView = async (folioId) => {
+        try {
+            const folioEntry = ledger.find(l => l.folio_id === folioId);
+            if (!folioEntry || !folioEntry.reservation_id) return;
+            const data = await api.getFolio(folioEntry.reservation_id);
+            setActiveFolio(data);
+            setInvoiceViewOpen(true);
         } catch(error) {
             alert(error.message);
         }
@@ -47,7 +63,7 @@ export default function LedgerTable() {
             await api.addLedgerEntry(activeFolio.id, {
                 type: 'PAYMENT',
                 amount: parseFloat(paymentAmount),
-                description: 'Card Payment - Settled',
+                description: `Payment - ${paymentMethod}`,
                 checkOutGuest
             });
             setSettleModalOpen(false);
@@ -133,14 +149,23 @@ export default function LedgerTable() {
                                     </span>
                                 </td>
                                 <td className="p-4 text-right">
-                                    {entry.folio_status !== 'SETTLED' && (
+                                    <div className="flex justify-end gap-2">
                                         <button 
-                                            onClick={() => openSettleModal(entry.folio_id)}
-                                            className="px-3 py-1 bg-brand/10 text-brand rounded-lg text-xs font-bold hover:bg-brand/20 transition-colors"
+                                            onClick={() => openInvoiceView(entry.folio_id)}
+                                            className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors flex items-center gap-1"
+                                            title="Print Invoice"
                                         >
-                                            Settle
+                                            <Printer size={14} /> Print
                                         </button>
-                                    )}
+                                        {entry.folio_status !== 'SETTLED' && (
+                                            <button 
+                                                onClick={() => openSettleModal(entry.folio_id)}
+                                                className="px-3 py-1 bg-brand/10 text-brand rounded-lg text-xs font-bold hover:bg-brand/20 transition-colors"
+                                            >
+                                                Settle
+                                            </button>
+                                        )}
+                                    </div>
                                 </td>
                             </motion.tr>
                         ))}
@@ -170,16 +195,31 @@ export default function LedgerTable() {
                                     <div className="text-2xl font-black text-brand">${activeFolio.balance}</div>
                                 </div>
                                 
-                                <div>
-                                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Payment Amount</label>
-                                    <input 
-                                        type="number" 
-                                        step="0.01" 
-                                        required 
-                                        value={paymentAmount} 
-                                        onChange={e => setPaymentAmount(e.target.value)} 
-                                        className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-lg font-bold focus:border-brand outline-none" 
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Payment Method</label>
+                                        <select 
+                                            value={paymentMethod}
+                                            onChange={e => setPaymentMethod(e.target.value)}
+                                            className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-sm font-bold focus:border-brand outline-none"
+                                        >
+                                            <option>Credit Card</option>
+                                            <option>Cash</option>
+                                            <option>Bank Transfer</option>
+                                            <option>OTA Virtual Card</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1">Payment Amount</label>
+                                        <input 
+                                            type="number" 
+                                            step="0.01" 
+                                            required 
+                                            value={paymentAmount} 
+                                            onChange={e => setPaymentAmount(e.target.value)} 
+                                            className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-lg font-bold focus:border-brand outline-none" 
+                                        />
+                                    </div>
                                 </div>
 
                                 <label className="flex items-center gap-3 p-3 bg-card-bg rounded-xl border border-border-subtle cursor-pointer hover:border-brand/50 transition-colors">
@@ -215,6 +255,13 @@ export default function LedgerTable() {
                     </div>
                 )}
             </AnimatePresence>
+
+            {invoiceViewOpen && activeFolio && (
+                <InvoicePrintView 
+                    folio={activeFolio} 
+                    onClose={() => setInvoiceViewOpen(false)} 
+                />
+            )}
         </div>
     )
 }

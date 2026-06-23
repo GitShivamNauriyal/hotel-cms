@@ -1,6 +1,9 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X, CreditCard, User, History, Receipt, Trash2 } from "lucide-react"
 import { api } from "../../../api"
+import { useState } from "react"
+import InvoicePrintView from "../../ledger/components/InvoicePrintView"
+import SettlePaymentModal from "../../ledger/components/SettlePaymentModal"
 
 export default function ReservationDetailSidebar({
     reservation,
@@ -9,6 +12,10 @@ export default function ReservationDetailSidebar({
     userRole,
     triggerSync
 }) {
+    const [invoiceViewOpen, setInvoiceViewOpen] = useState(false)
+    const [settleModalOpen, setSettleModalOpen] = useState(false)
+    const [activeFolio, setActiveFolio] = useState(null)
+
     if (!reservation) return null
 
     const handleDelete = async () => {
@@ -19,6 +26,26 @@ export default function ReservationDetailSidebar({
             onClose();
         } catch (error) {
             alert(error.message);
+        }
+    }
+
+    const handleOpenInvoice = async () => {
+        try {
+            const data = await api.getFolio(reservation.id);
+            setActiveFolio(data);
+            setInvoiceViewOpen(true);
+        } catch (error) {
+            alert("No folio found or error fetching folio.");
+        }
+    }
+
+    const handleOpenSettle = async () => {
+        try {
+            const data = await api.getFolio(reservation.id);
+            setActiveFolio(data);
+            setSettleModalOpen(true);
+        } catch (error) {
+            alert("No folio found or error fetching folio.");
         }
     }
 
@@ -164,14 +191,30 @@ export default function ReservationDetailSidebar({
 
                         {/* Actions */}
                         <div className="p-6 border-t border-border-subtle bg-app-bg/50 grid grid-cols-2 gap-4">
-                            <button className="py-4 rounded-2xl border border-border-subtle font-black text-xs uppercase hover:bg-card-bg transition-colors text-text-main">
+                            <button onClick={handleOpenInvoice} className="py-4 rounded-2xl border border-border-subtle font-black text-xs uppercase hover:bg-card-bg transition-colors text-text-main">
                                 Print Invoice
                             </button>
-                            <button className="py-4 rounded-2xl bg-brand text-[var(--brand-text)] font-black text-xs uppercase hover:brightness-110 transition-all shadow-lg shadow-brand/20">
+                            <button onClick={handleOpenSettle} className="py-4 rounded-2xl bg-brand text-[var(--brand-text)] font-black text-xs uppercase hover:brightness-110 transition-all shadow-lg shadow-brand/20">
                                 Settle Payment
                             </button>
                         </div>
                     </motion.div>
+
+                    {invoiceViewOpen && activeFolio && (
+                        <InvoicePrintView 
+                            folio={activeFolio} 
+                            onClose={() => setInvoiceViewOpen(false)} 
+                        />
+                    )}
+
+                    <SettlePaymentModal 
+                        isOpen={settleModalOpen}
+                        onClose={() => setSettleModalOpen(false)}
+                        folio={activeFolio}
+                        onSuccess={() => {
+                            if (triggerSync) triggerSync();
+                        }}
+                    />
                 </>
             )}
         </AnimatePresence>

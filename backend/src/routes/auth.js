@@ -61,6 +61,33 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/verify-password', require('../middleware/auth').requireAuth, async (req, res) => {
+    const { password } = req.body;
+    
+    if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+    }
+
+    try {
+        const { rows } = await req.db.query(`SELECT password_hash FROM users WHERE id = $1`, [req.user.user_id]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, rows[0].password_hash);
+        
+        if (!passwordMatch) {
+            return res.status(401).json({ error: 'Incorrect password' });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Password verification error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 router.get('/me', require('../middleware/auth').requireAuth, async (req, res) => {
     try {
         const { rows } = await req.db.query(`

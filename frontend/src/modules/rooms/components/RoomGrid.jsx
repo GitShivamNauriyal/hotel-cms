@@ -147,6 +147,7 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
                         key={room.id} 
                         room={room} 
                         onClick={(r) => { setSelectedRoom(r); setIsPanelOpen(true); }} 
+                        onQuickClean={(r) => handleStatusChange(r.id, 'available')}
                     />
                 ))}
                 {filteredRooms.length === 0 && (
@@ -247,6 +248,7 @@ export default function RoomGrid({ userRole, rooms = [], roomTypes = [], reserva
 
             <RoomDetailsPanel 
                 room={selectedRoom}
+                activeRes={selectedRoom ? reservations.find(res => res.room_id === selectedRoom.id && res.status === 'CHECKED_IN') : null}
                 isOpen={isPanelOpen}
                 onClose={() => setIsPanelOpen(false)}
                 onStatusChange={handleStatusChange}

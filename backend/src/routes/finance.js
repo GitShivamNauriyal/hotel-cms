@@ -38,10 +38,16 @@ router.get('/folios/:reservationId', async (req, res) => {
             entries.push(entry);
         });
 
+        const { rows: allEntries } = await req.db.query(
+            `SELECT * FROM ledger_entries WHERE folio_id = $1 ORDER BY created_at ASC`,
+            [folio.id]
+        );
+
         res.json({
             ...folio,
             balance: balance.toFixed(2),
-            summary: entries
+            summary: entries,
+            entries: allEntries
         });
 
     } catch (error) {

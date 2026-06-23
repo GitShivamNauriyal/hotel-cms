@@ -1,10 +1,17 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X, Save } from "lucide-react"
 import { useState, useEffect } from "react"
+import { api } from "../../../api"
+import InvoicePrintView from "../../ledger/components/InvoicePrintView"
+import SettlePaymentModal from "../../ledger/components/SettlePaymentModal"
 
-export default function RoomDetailsPanel({ room, isOpen, onClose, onStatusChange, userRole }) {
+export default function RoomDetailsPanel({ room, activeRes, isOpen, onClose, onStatusChange, userRole }) {
     const [editMode, setEditMode] = useState(false);
     const [statusDraft, setStatusDraft] = useState("");
+
+    const [invoiceViewOpen, setInvoiceViewOpen] = useState(false);
+    const [settleModalOpen, setSettleModalOpen] = useState(false);
+    const [activeFolio, setActiveFolio] = useState(null);
 
     useEffect(() => {
         if (room) {
@@ -26,6 +33,28 @@ export default function RoomDetailsPanel({ room, isOpen, onClose, onStatusChange
             onStatusChange(room.id, statusDraft);
         }
         setEditMode(false);
+    }
+
+    const handleOpenInvoice = async () => {
+        if (!activeRes) return;
+        try {
+            const data = await api.getFolio(activeRes.id);
+            setActiveFolio(data);
+            setInvoiceViewOpen(true);
+        } catch (error) {
+            alert("No folio found or error fetching folio.");
+        }
+    }
+
+    const handleOpenSettle = async () => {
+        if (!activeRes) return;
+        try {
+            const data = await api.getFolio(activeRes.id);
+            setActiveFolio(data);
+            setSettleModalOpen(true);
+        } catch (error) {
+            alert("No folio found or error fetching folio.");
+        }
     }
 
     return (
@@ -104,12 +133,23 @@ export default function RoomDetailsPanel({ room, isOpen, onClose, onStatusChange
                     </div>
 
                     {/* Guest Information */}
-                    {room.guest && (
+                    {room.guest && activeRes && (
                         <div className="space-y-3">
-                            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">Active Guest</h3>
+                            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex justify-between">
+                                Active Guest
+                                <span className="text-brand font-black">{activeRes.id.split('-')[0].toUpperCase()}</span>
+                            </h3>
                             <div className="bg-app-bg p-4 rounded-2xl border border-border-subtle">
-                                <p className="text-lg font-black text-text-main">{room.guest}</p>
-                                {/* Future: Link to reservation or ledger */}
+                                <p className="text-lg font-black text-text-main mb-4">{room.guest}</p>
+                                
+                                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-border-subtle">
+                                    <button onClick={handleOpenInvoice} className="py-2 rounded-xl bg-card-bg border border-border-subtle font-bold text-[10px] uppercase hover:bg-border-subtle transition-colors text-text-main">
+                                        Print Invoice
+                                    </button>
+                                    <button onClick={handleOpenSettle} className="py-2 rounded-xl bg-brand/10 text-brand font-bold text-[10px] uppercase hover:bg-brand/20 transition-colors">
+                                        Settle Payment
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -130,6 +170,22 @@ export default function RoomDetailsPanel({ room, isOpen, onClose, onStatusChange
                     </div>
                 </div>
             </motion.div>
+
+            {invoiceViewOpen && activeFolio && (
+                <InvoicePrintView 
+                    folio={activeFolio} 
+                    onClose={() => setInvoiceViewOpen(false)} 
+                />
+            )}
+
+            <SettlePaymentModal 
+                isOpen={settleModalOpen}
+                onClose={() => setSettleModalOpen(false)}
+                folio={activeFolio}
+                onSuccess={() => {
+                    // Could trigger sync if needed
+                }}
+            />
         </AnimatePresence>
     )
 }
